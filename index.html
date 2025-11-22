@@ -13,36 +13,94 @@
             padding: 20px;
         }
         
-        .message {
-            padding: 10px;
-            margin: 5px;
-            border-radius: 10px;
-            max-width: fit-content;
-            word-wrap: break-word;
+        .message-container {
+            display: flex;
+            margin: 10px 0;
+            align-items: flex-start;
         }
         
-        .sent {
+        .message-container.sent {
+            justify-content: flex-end;
+        }
+        
+        .message-container.received {
+            justify-content: flex-start;
+        }
+        
+        .message-bubble {
+            padding: 10px 15px;
+            border-radius: 18px;
+            max-width: 70%;
+            word-wrap: break-word;
+            position: relative;
+        }
+        
+        .sent .message-bubble {
             background: #bb86fc;
             color: black;
-            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        
+        .received .message-bubble {
+            background: #333;
+            border-bottom-left-radius: 4px;
+        }
+        
+        .profile-pic {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            margin: 0 8px;
+            flex-shrink: 0;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .sent .profile-pic {
+            order: 2;
+            margin-left: 8px;
+            margin-right: 0;
+        }
+        
+        .received .profile-pic {
+            order: 0;
+            margin-right: 8px;
+            margin-left: 0;
+        }
+        
+        .message-name {
+            font-size: 12px;
+            margin-bottom: 5px;
+            opacity: 0.8;
+            padding: 0 45px;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        .name-sent {
             text-align: right;
         }
         
-        .received {
-            background: #333;
-            margin-right: auto;
+        .name-received {
+            text-align: left;
         }
-        #messageInput {
-    width: 80%;
-    padding: 10px;
-    background: #333;
-    color: white;
-    border: 1px solid #555;
-    resize: none;
-    font-family: Arial;
-}
         
-        #sendButton, #mirrorToggle {
+        #messageInput {
+            width: 80%;
+            padding: 10px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            resize: none;
+            font-family: Arial;
+        }
+        
+        #sendButton {
             padding: 10px;
             background: #bb86fc;
             color: black;
@@ -59,45 +117,227 @@
         }
 
         #clearButton {
-    padding: 10px;
-    background: #ff4444;
-    color: white;
-    border: none;
-    cursor: pointer;
-    margin-left: 5px;
+            padding: 10px;
+            background: #ff4444;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
         }
 
-    #exportButton {
-    padding: 10px;
-    background: #03DAC6;
-    color: black;
-    border: none;
-    cursor: pointer;
-    margin-left: 5px;
-}
-.input-container {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-}
-        h1{color: transparent}
-        h1:hover {color:white}
+        #exportButton {
+            padding: 10px;
+            background: #03DAC6;
+            color: black;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+        
+        .input-container {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+        }
 
+        .spoiler{color: transparent}
+        .spoiler:hover {color: inherit}
+        footer {color: grey; margin-top: 2em}
+        
+        .personas-container {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+            flex-wrap: wrap;
+            align-items: flex-end;
+        }
+        
+        .persona-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .persona {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            font-weight: bold;
+            position: relative;
+            font-size: 14px;
+            user-select: none;
+            -webkit-user-select: none;
+            transition: border-color 0.1s ease;
+        }
+        
+        .persona.active {
+            border-color: #bb86fc;
+        }
+        
+        .persona.add-persona {
+            background: #333;
+            border: 2px dashed #555;
+            font-size: 20px;
+        }
+
+        .persona-name {
+            font-size: 11px;
+            color: #888;
+            text-align: center;
+            max-width: 50px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: #222;
+            padding: 20px;
+            border-radius: 10px;
+            width: 340px;
+            max-width: 90vw;
+        }
+
+        .modal input {
+            width: 100%;
+            padding: 8px;
+            margin: 5px 0;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 15px;
+        }
+
+        .color-palette {
+            width: 100%;
+            height: 120px;
+            border-radius: 8px;
+            margin: 10px 0;
+            cursor: crosshair;
+            border: 2px solid #444;
+            background: linear-gradient(to right, 
+                #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000
+            );
+            position: relative;
+            overflow: hidden;
+        }
+
+        .color-palette::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(to bottom, 
+                rgba(255,255,255,1), 
+                rgba(255,255,255,0.5), 
+                rgba(0,0,0,0), 
+                rgba(0,0,0,0.5), 
+                rgba(0,0,0,1)
+            );
+        }
+
+        .color-preview {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            margin: 10px auto;
+            border: 2px solid #666;
+            background: var(--selected-color, #bb86fc);
+        }
+
+        .symbol-input {
+            text-align: center;
+            font-size: 18px;
+            height: 40px;
+        }
+
+        .color-controls {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 10px 0;
+        }
+
+        .current-color {
+            flex-shrink: 0;
+        }
     </style>
 </head>
-<body><h1>selfcest the mirror chat</h1><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-    <button id="mirrorToggle" title="click ctrl + ` (tick)">switch persona</button>
-    <div>
-        <button id="clearButton">clear Chat</button>
-        <button id="exportButton">export Chat</button>
+<body>
+    <h1 class="spoiler">selfcest the mirror chat</h1>
+    
+    <div class="controls">
+        <div class="personas-container" id="personasContainer"></div>
+        <div>
+            <button id="clearButton">clear chat</button>
+            <button id="exportButton">export chat</button>
+        </div>
     </div>
-</div>
+    
     <div id="chatMessages"></div>
     
     <div class="input-container">
-    <textarea id="messageInput" placeholder="type message..." rows="1"></textarea>
-    <button id="sendButton">send</button>
-</div>
+        <textarea id="messageInput" placeholder="type message..." rows="1"></textarea>
+        <button id="sendButton">send</button>
+    </div>
+
+    <div id="personaModal" class="modal">
+        <div class="modal-content">
+            <h3 id="modalTitle">Create Persona</h3>
+            <input type="text" id="personaName" placeholder="Persona name" maxlength="20">
+            <input type="text" id="personaSymbol" placeholder="Profile symbol (1-2 chars)" maxlength="2" class="symbol-input">
+            
+            <div style="text-align: center; margin: 10px 0;">Click on the palette to choose color:</div>
+            
+            <div class="color-controls">
+                <div class="color-preview" id="colorPreview"></div>
+                <div class="color-palette" id="colorPalette"></div>
+            </div>
+            
+            <div class="modal-buttons">
+                <button id="cancelPersona">Cancel</button>
+                <button id="deletePersona" style="background: #ff4444; display: none;">Delete</button>
+                <button id="savePersona">Save</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>is this private. <span class="spoiler">yes. this js uses the local storage.</span></footer>
 
     <script>
         const chatMessages = document.getElementById('chatMessages');
@@ -105,130 +345,442 @@
         const sendButton = document.getElementById('sendButton');
         const clearButton = document.getElementById('clearButton');
         const exportButton = document.getElementById('exportButton');
-        const mirrorToggle = document.getElementById('mirrorToggle');
+        const personasContainer = document.getElementById('personasContainer');
+        const personaModal = document.getElementById('personaModal');
+        const personaName = document.getElementById('personaName');
+        const personaSymbol = document.getElementById('personaSymbol');
+        const colorPalette = document.getElementById('colorPalette');
+        const colorPreview = document.getElementById('colorPreview');
+        const savePersona = document.getElementById('savePersona');
+        const cancelPersona = document.getElementById('cancelPersona');
+        const deletePersona = document.getElementById('deletePersona');
+        const modalTitle = document.getElementById('modalTitle');
         
-        let viewingAsPersonaA = true;
+        let personas = [];
+        let activePersonaId = null;
+        let editingPersonaId = null;
+        let selectedColor = '#bb86fc';
+        let lastClickTime = 0;
         
-        sendButton.addEventListener('click', sendMessage);
-   messageInput.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-
-    }
-});
-                clearButton.addEventListener('click', clearChat);
-exportButton.addEventListener('click', exportChat);
-        mirrorToggle.addEventListener('click', toggleMirror);
+        function initializePersonas() {
+            const savedPersonas = localStorage.getItem('mirrorChatPersonas');
+            if (savedPersonas) {
+                personas = JSON.parse(savedPersonas);
+            } else {
+                personas = [
+                    { id: 'persona1', name: 'You', color: '#bb86fc', symbol: 'Y' },
+                    { id: 'persona2', name: 'Other', color: '#03DAC6', symbol: 'O' }
+                ];
+                savePersonas();
+            }
+            
+            const savedActive = localStorage.getItem('mirrorChatActivePersona');
+            activePersonaId = savedActive || personas[0].id;
+            
+            renderPersonas();
+            initializeColorPalette();
+        }
         
-        document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.key === '`') {
-        e.preventDefault();
-        toggleMirror();
-    }
-});
-
+        function initializeColorPalette() {
+            colorPalette.addEventListener('click', (e) => {
+                const rect = colorPalette.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                const width = rect.width;
+                const height = rect.height;
+                
+                // Calculate hue from x position (0 to 360)
+                const hue = (x / width) * 360;
+                
+                // Calculate saturation and lightness from y position
+                let saturation, lightness;
+                if (y < height / 2) {
+                    // Top half: white to saturated
+                    saturation = (y / (height / 2)) * 100;
+                    lightness = 50 + (50 * (1 - y / (height / 2)));
+                } else {
+                    // Bottom half: saturated to black
+                    saturation = 100 - ((y - height / 2) / (height / 2)) * 100;
+                    lightness = 50 - (50 * ((y - height / 2) / (height / 2)));
+                }
+                
+                // Clamp values
+                saturation = Math.max(0, Math.min(100, saturation));
+                lightness = Math.max(0, Math.min(100, lightness));
+                
+                // Convert to hex
+                selectedColor = hslToHex(hue, saturation, lightness);
+                updateColorPreview();
+            });
+        }
+        
+        function hslToHex(h, s, l) {
+            h /= 360;
+            s /= 100;
+            l /= 100;
+            
+            let r, g, b;
+            
+            if (s === 0) {
+                r = g = b = l; // achromatic
+            } else {
+                const hue2rgb = (p, q, t) => {
+                    if (t < 0) t += 1;
+                    if (t > 1) t -= 1;
+                    if (t < 1/6) return p + (q - p) * 6 * t;
+                    if (t < 1/2) return q;
+                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+                    return p;
+                };
+                
+                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+                const p = 2 * l - q;
+                
+                r = hue2rgb(p, q, h + 1/3);
+                g = hue2rgb(p, q, h);
+                b = hue2rgb(p, q, h - 1/3);
+            }
+            
+            const toHex = (x) => {
+                const hex = Math.round(x * 255).toString(16);
+                return hex.length === 1 ? '0' + hex : hex;
+            };
+            
+            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+        }
+        
+        function updateColorPreview() {
+            colorPreview.style.background = selectedColor;
+            colorPreview.style.setProperty('--selected-color', selectedColor);
+        }
+        
+        function renderPersonas() {
+            personasContainer.innerHTML = '';
+            
+            personas.forEach(persona => {
+                const personaWrapper = document.createElement('div');
+                personaWrapper.className = 'persona-wrapper';
+                
+                const personaEl = document.createElement('div');
+                personaEl.className = `persona ${persona.id === activePersonaId ? 'active' : ''}`;
+                personaEl.style.background = persona.color;
+                personaEl.title = `${persona.name} (${persona.symbol})`;
+                personaEl.textContent = persona.symbol;
+                
+                const nameEl = document.createElement('div');
+                nameEl.className = 'persona-name';
+                nameEl.textContent = persona.name;
+                nameEl.title = persona.name;
+                
+                personaEl.addEventListener('click', (e) => {
+                    const currentTime = Date.now();
+                    if (currentTime - lastClickTime < 300) { // Double click
+                        e.preventDefault();
+                        e.stopPropagation();
+                        editPersona(persona.id);
+                    } else { // Single click
+                        setActivePersona(persona.id);
+                    }
+                    lastClickTime = currentTime;
+                });
+                
+                personaWrapper.appendChild(personaEl);
+                personaWrapper.appendChild(nameEl);
+                personasContainer.appendChild(personaWrapper);
+            });
+            
+            const addWrapper = document.createElement('div');
+            addWrapper.className = 'persona-wrapper';
+            
+            const addPersonaEl = document.createElement('div');
+            addPersonaEl.className = 'persona add-persona';
+            addPersonaEl.textContent = '+';
+            addPersonaEl.title = 'Add new persona';
+            addPersonaEl.addEventListener('click', createNewPersona);
+            
+            const addNameEl = document.createElement('div');
+            addNameEl.className = 'persona-name';
+            addNameEl.textContent = 'Add';
+            addNameEl.style.color = '#666';
+            
+            addWrapper.appendChild(addPersonaEl);
+            addWrapper.appendChild(addNameEl);
+            personasContainer.appendChild(addWrapper);
+        }
+        
+        function setActivePersona(personaId) {
+            activePersonaId = personaId;
+            localStorage.setItem('mirrorChatActivePersona', personaId);
+            
+            // Update active state immediately
+            document.querySelectorAll('.persona').forEach(el => {
+                el.classList.remove('active');
+            });
+            const activeEl = Array.from(document.querySelectorAll('.persona')).find(el => {
+                const persona = personas.find(p => p.symbol === el.textContent && p.color === el.style.background);
+                return persona && persona.id === personaId;
+            });
+            if (activeEl) {
+                activeEl.classList.add('active');
+            }
+            
+            renderChat();
+        }
+        
+        function renderChat() {
+            const saved = localStorage.getItem('mirrorChat');
+            chatMessages.innerHTML = '';
+            
+            if (saved) {
+                const messages = JSON.parse(saved);
+                let lastPersonaId = null;
+                
+                messages.forEach(msgData => {
+                    const persona = personas.find(p => p.id === msgData.personaId);
+                    if (!persona) return;
+                    
+                    const isSent = msgData.personaId === activePersonaId;
+                    const showProfile = msgData.personaId !== lastPersonaId;
+                    
+                    if (showProfile) {
+                        const nameEl = document.createElement('div');
+                        nameEl.className = `message-name ${isSent ? 'name-sent' : 'name-received'}`;
+                        nameEl.textContent = persona.name;
+                        nameEl.style.color = persona.color;
+                        chatMessages.appendChild(nameEl);
+                    }
+                    
+                    const messageContainer = document.createElement('div');
+                    messageContainer.className = `message-container ${isSent ? 'sent' : 'received'}`;
+                    
+                    if (showProfile) {
+                        const profilePic = document.createElement('div');
+                        profilePic.className = 'profile-pic';
+                        profilePic.style.background = persona.color;
+                        profilePic.textContent = persona.symbol;
+                        messageContainer.appendChild(profilePic);
+                    } else {
+                        const spacer = document.createElement('div');
+                        spacer.className = 'profile-pic';
+                        spacer.style.visibility = 'hidden';
+                        messageContainer.appendChild(spacer);
+                    }
+                    
+                    const messageBubble = document.createElement('div');
+                    messageBubble.className = 'message-bubble';
+                    messageBubble.innerHTML = msgData.text.replace(/\n/g, '<br>');
+                    messageContainer.appendChild(messageBubble);
+                    
+                    chatMessages.appendChild(messageContainer);
+                    lastPersonaId = msgData.personaId;
+                });
+                
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
+        
+        function createNewPersona() {
+            editingPersonaId = null;
+            modalTitle.textContent = 'Create Persona';
+            deletePersona.style.display = 'none';
+            personaName.value = '';
+            personaSymbol.value = '';
+            // Clear the stored first character
+            delete personaName.dataset.lastFirstChar;
+            selectedColor = '#bb86fc';
+            updateColorPreview();
+            personaModal.style.display = 'flex';
+            personaName.focus();
+        }
+        
+        function editPersona(personaId) {
+            const persona = personas.find(p => p.id === personaId);
+            if (!persona) return;
+            
+            editingPersonaId = personaId;
+            modalTitle.textContent = 'Edit Persona';
+            deletePersona.style.display = personas.length > 2 ? 'block' : 'none';
+            personaName.value = persona.name;
+            personaSymbol.value = persona.symbol;
+            selectedColor = persona.color;
+            // Store the current first character for smart updating
+            personaName.dataset.lastFirstChar = persona.name.charAt(0).toUpperCase();
+            updateColorPreview();
+            personaModal.style.display = 'flex';
+            personaName.focus();
+        }
+        
+        function savePersonaHandler() {
+            const name = personaName.value.trim();
+            if (!name) return;
+            
+            // Auto-generate symbol from first letter of name
+            let symbol = personaSymbol.value.trim();
+            if (!symbol && name.length > 0) {
+                symbol = name.charAt(0).toUpperCase();
+            }
+            if (!symbol) return;
+            
+            let newPersonaId = editingPersonaId;
+            
+            if (editingPersonaId) {
+                const personaIndex = personas.findIndex(p => p.id === editingPersonaId);
+                if (personaIndex !== -1) {
+                    personas[personaIndex].name = name;
+                    personas[personaIndex].symbol = symbol;
+                    personas[personaIndex].color = selectedColor;
+                }
+            } else {
+                newPersonaId = 'persona' + Date.now();
+                const newPersona = {
+                    id: newPersonaId,
+                    name: name,
+                    symbol: symbol,
+                    color: selectedColor
+                };
+                personas.push(newPersona);
+                // Auto-select newly created persona
+                setActivePersona(newPersonaId);
+            }
+            
+            savePersonas();
+            renderPersonas();
+            renderChat();
+            personaModal.style.display = 'none';
+        }
+        
+        function deletePersonaHandler() {
+            if (personas.length <= 2) return;
+            
+            const personaIndex = personas.findIndex(p => p.id === editingPersonaId);
+            if (personaIndex !== -1) {
+                personas.splice(personaIndex, 1);
+                savePersonas();
+                renderPersonas();
+                
+                if (activePersonaId === editingPersonaId) {
+                    setActivePersona(personas[0].id);
+                }
+            }
+            personaModal.style.display = 'none';
+        }
+        
+        function savePersonas() {
+            localStorage.setItem('mirrorChatPersonas', JSON.stringify(personas));
+        }
+        
         function sendMessage() {
             const text = messageInput.value.trim();
             if (!text) return;
             
-            const message = document.createElement('div');
-            message.className = 'message sent';
-message.innerHTML = text.replace(/\n/g, '<br>');
-
-            chatMessages.appendChild(message);
+            const messageData = {
+                personaId: activePersonaId,
+                text: text,
+                timestamp: Date.now()
+            };
+            
+            const saved = localStorage.getItem('mirrorChat');
+            const messages = saved ? JSON.parse(saved) : [];
+            messages.push(messageData);
+            localStorage.setItem('mirrorChat', JSON.stringify(messages));
+            
             messageInput.value = '';
-            chatMessages.scrollTop = chatMessages.scrollHeight;
+            renderChat();
         }
-        function toggleMirror() {
-    viewingAsPersonaA = !viewingAsPersonaA;
-    
-    const messages = document.querySelectorAll('.message');
-    messages.forEach(msg => {
-        msg.classList.toggle('sent');
-        msg.classList.toggle('received');
-    });
-    
-    saveChat(); // Save after toggling persona
-}
 
-        // Auto-save function
-function saveChat() {
-    const messages = Array.from(chatMessages.children).map(msg => ({
-        text: msg.innerHTML,
-        isSent: msg.classList.contains('sent')
-    }));
-    localStorage.setItem('mirrorChat', JSON.stringify(messages));
-}
+        function clearChat() {
+            if (confirm('Are you sure you want to clear the chat?')) {
+                localStorage.removeItem('mirrorChat');
+                renderChat();
+            }
+        }
 
-// Load saved chat function
-function loadChat() {
-    const saved = localStorage.getItem('mirrorChat');
-    if (saved) {
-        const messages = JSON.parse(saved);
-        messages.forEach(msgData => {
-            const message = document.createElement('div');
-            message.className = `message ${msgData.isSent ? 'sent' : 'received'}`;
-            message.innerHTML = msgData.text;
-            chatMessages.appendChild(message);
+        function exportChat() {
+            const saved = localStorage.getItem('mirrorChat');
+            if (!saved) return;
+            
+            const messages = JSON.parse(saved);
+            let exportText = '';
+            
+            messages.forEach(msgData => {
+                const persona = personas.find(p => p.id === msgData.personaId);
+                const name = persona ? persona.name : 'Unknown';
+                const text = msgData.text.replace(/\n/g, '\n');
+                
+                exportText += `${name}:\n${text}\n\n`;
+            });
+            
+            const blob = new Blob([exportText], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'chat_export.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Event listeners
+        sendButton.addEventListener('click', sendMessage);
+        messageInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
         });
-        chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-}
-// Clear chat function
-function clearChat() {
-    if (confirm('Are you sure you want to clear the chat?')) {
-        chatMessages.innerHTML = '';
-        localStorage.removeItem('mirrorChat');
-    }
-}
+        clearButton.addEventListener('click', clearChat);
+        exportButton.addEventListener('click', exportChat);
+        savePersona.addEventListener('click', savePersonaHandler);
+        cancelPersona.addEventListener('click', () => personaModal.style.display = 'none');
+        deletePersona.addEventListener('click', deletePersonaHandler);
 
-// Export chat function
-function exportChat() {
-    const messages = Array.from(chatMessages.children);
-    let exportText = '';
-    
-    messages.forEach(msg => {
-        const originalIsSent = localStorage.getItem('mirrorChat') ? 
-            JSON.parse(localStorage.getItem('mirrorChat'))
-                .find(m => m.text === msg.innerHTML)?.isSent : 
-            msg.classList.contains('sent');
-        
-        const prefix = originalIsSent ? 'you:' : 'other:';
-        const text = msg.innerHTML.replace(/<br>/g, '\n');
-        exportText += `${prefix}\n${text}\n\n`;
-    });
-    
-    // Create download
-    const blob = new Blob([exportText], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'chat_export.txt';
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-}
+        personaModal.addEventListener('click', (e) => {
+            if (e.target === personaModal) {
+                personaModal.style.display = 'none';
+            }
+        });
 
-// Modify sendMessage function to auto-save
-function sendMessage() {
-    const text = messageInput.value.trim();
-    if (!text) return;
-    
-    const message = document.createElement('div');
-    message.className = 'message sent';
-    message.innerHTML = text.replace(/\n/g, '<br>');
-    
-    chatMessages.appendChild(message);
-    messageInput.value = '';
-    chatMessages.scrollTop = chatMessages.scrollHeight;
-    
-    saveChat(); // Auto-save after sending
-}
+        personaName.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                savePersonaHandler();
+            }
+        });
 
-// Load chat when page loads
-document.addEventListener('DOMContentLoaded', loadChat);
+        // Auto-fill symbol when typing name (only if symbol is empty or matches old first letter)
+        personaName.addEventListener('input', (e) => {
+            const name = e.target.value;
+            const symbolField = personaSymbol.value.trim();
+            
+            // Don't auto-fill if symbol looks like an emoji or special character
+            const isEmoji = symbolField.length === 1 && /\p{Emoji}/u.test(symbolField);
+            const isSpecialSymbol = symbolField.length === 1 && /[^a-zA-Z0-9\s]/.test(symbolField);
+            
+            // If symbol is empty OR symbol matches the old first character AND not an emoji/special symbol
+            if ((!symbolField || symbolField === personaName.dataset.lastFirstChar) && !isEmoji && !isSpecialSymbol) {
+                if (name.length > 0) {
+                    const newFirstChar = name.charAt(0).toUpperCase();
+                    personaSymbol.value = newFirstChar;
+                    personaName.dataset.lastFirstChar = newFirstChar;
+                } else {
+                    personaSymbol.value = '';
+                    delete personaName.dataset.lastFirstChar;
+                }
+            }
+        });
+
+        personaSymbol.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                savePersonaHandler();
+            }
+        });
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            initializePersonas();
+            renderChat();
+            updateColorPreview();
+        });
     </script>
 </body>
 </html>

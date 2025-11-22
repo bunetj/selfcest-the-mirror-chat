@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mirror Chat</title>
+    <style>
+        body {
+            background: #121212;
+            color: white;
+            font-family: Arial;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .message {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            max-width: fit-content;
+            word-wrap: break-word;
+        }
+        
+        .sent {
+            background: #bb86fc;
+            color: black;
+            margin-left: auto;
+            text-align: right;
+        }
+        
+        .received {
+            background: #333;
+            margin-right: auto;
+        }
+        #messageInput {
+    width: 80%;
+    padding: 10px;
+    background: #333;
+    color: white;
+    border: 1px solid #555;
+    resize: none;
+    font-family: Arial;
+}
+        
+        #sendButton, #mirrorToggle {
+            padding: 10px;
+            background: #bb86fc;
+            color: black;
+            border: none;
+            cursor: pointer;
+        }
+        
+        #chatMessages {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #333;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        #clearButton {
+    padding: 10px;
+    background: #ff4444;
+    color: white;
+    border: none;
+    cursor: pointer;
+    margin-left: 5px;
+        }
+
+    #exportButton {
+    padding: 10px;
+    background: #03DAC6;
+    color: black;
+    border: none;
+    cursor: pointer;
+    margin-left: 5px;
+}
+.input-container {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+    </style>
+</head>
+<body><div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+    <button id="mirrorToggle" title="click ctrl + ` (tick)">Switch Persona</button>
+    <div>
+        <button id="clearButton">Clear Chat</button>
+        <button id="exportButton">Export Chat</button>
+    </div>
+</div>
+    <div id="chatMessages"></div>
+    
+    <div class="input-container">
+    <textarea id="messageInput" placeholder="Type message..." rows="1"></textarea>
+    <button id="sendButton">Send</button>
+</div>
+
+    <script>
+        const chatMessages = document.getElementById('chatMessages');
+        const messageInput = document.getElementById('messageInput');
+        const sendButton = document.getElementById('sendButton');
+        const clearButton = document.getElementById('clearButton');
+        const exportButton = document.getElementById('exportButton');
+        const mirrorToggle = document.getElementById('mirrorToggle');
+        
+        let viewingAsPersonaA = true;
+        
+        sendButton.addEventListener('click', sendMessage);
+   messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+
+    }
+});
+                clearButton.addEventListener('click', clearChat);
+exportButton.addEventListener('click', exportChat);
+        mirrorToggle.addEventListener('click', toggleMirror);
+        
+        document.addEventListener('keydown', (e) => {
+    if (e.ctrlKey && e.key === '`') {
+        e.preventDefault();
+        toggleMirror();
+    }
+});
+
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            const message = document.createElement('div');
+            message.className = 'message sent';
+message.innerHTML = text.replace(/\n/g, '<br>');
+
+            chatMessages.appendChild(message);
+            messageInput.value = '';
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        function toggleMirror() {
+    viewingAsPersonaA = !viewingAsPersonaA;
+    
+    const messages = document.querySelectorAll('.message');
+    messages.forEach(msg => {
+        msg.classList.toggle('sent');
+        msg.classList.toggle('received');
+    });
+    
+    saveChat(); // Save after toggling persona
+}
+
+        // Auto-save function
+function saveChat() {
+    const messages = Array.from(chatMessages.children).map(msg => ({
+        text: msg.innerHTML,
+        isSent: msg.classList.contains('sent')
+    }));
+    localStorage.setItem('mirrorChat', JSON.stringify(messages));
+}
+
+// Load saved chat function
+function loadChat() {
+    const saved = localStorage.getItem('mirrorChat');
+    if (saved) {
+        const messages = JSON.parse(saved);
+        messages.forEach(msgData => {
+            const message = document.createElement('div');
+            message.className = `message ${msgData.isSent ? 'sent' : 'received'}`;
+            message.innerHTML = msgData.text;
+            chatMessages.appendChild(message);
+        });
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+}
+// Clear chat function
+function clearChat() {
+    if (confirm('Are you sure you want to clear the chat?')) {
+        chatMessages.innerHTML = '';
+        localStorage.removeItem('mirrorChat');
+    }
+}
+
+// Export chat function
+function exportChat() {
+    const messages = Array.from(chatMessages.children);
+    let exportText = '';
+    
+    messages.forEach(msg => {
+        const originalIsSent = localStorage.getItem('mirrorChat') ? 
+            JSON.parse(localStorage.getItem('mirrorChat'))
+                .find(m => m.text === msg.innerHTML)?.isSent : 
+            msg.classList.contains('sent');
+        
+        const prefix = originalIsSent ? 'you:' : 'other:';
+        const text = msg.innerHTML.replace(/<br>/g, '\n');
+        exportText += `${prefix}\n${text}\n\n`;
+    });
+    
+    // Create download
+    const blob = new Blob([exportText], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'chat_export.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+// Modify sendMessage function to auto-save
+function sendMessage() {
+    const text = messageInput.value.trim();
+    if (!text) return;
+    
+    const message = document.createElement('div');
+    message.className = 'message sent';
+    message.innerHTML = text.replace(/\n/g, '<br>');
+    
+    chatMessages.appendChild(message);
+    messageInput.value = '';
+    chatMessages.scrollTop = chatMessages.scrollHeight;
+    
+    saveChat(); // Auto-save after sending
+}
+
+// Load chat when page loads
+document.addEventListener('DOMContentLoaded', loadChat);
+    </script>
+</body>
+</html>

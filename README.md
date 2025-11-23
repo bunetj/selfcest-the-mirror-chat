@@ -15,6 +15,7 @@ https://antar.chat/
 - your personal private diary imbued with self-help culture baits, mass sold
 - rich features
 - mobile only
+- all messages to the left, received
 
 ### SelfCest
 
@@ -41,7 +42,7 @@ https://bunetj.github.io/selfcest-the-mirror-chat/
 
 - actually accompany or guide you
 - accepting inappropriate topics
-- confirms your biases. won't initiate something different unless prompted
+- confirms your biases. won't initiate something different unless prompted. encourages avoiding of human resources.
 - realistic chat interface
 - won't process your hidden relational or emotional needs you can't prompt bc they're hidden and unsaid
 

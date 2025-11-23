@@ -147,7 +147,7 @@
         .personas-container {
             display: flex;
             gap: 15px;
-            margin-bottom: 10px;
+            margin-top: 10px;
             flex-wrap: wrap;
             align-items: flex-end;
         }
@@ -198,11 +198,11 @@
             -webkit-user-select: none;
         }
 
-        .controls {
+        .top-controls {
             display: flex;
-            justify-content: space-between;
             align-items: center;
             margin-bottom: 10px;
+            gap: 10px;
         }
 
         .modal {
@@ -239,6 +239,40 @@
             display: flex;
             justify-content: space-between;
             margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            padding: 8px 16px;
+            background: #bb86fc;
+            color: black;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .modal-buttons button:hover {
+            background: #9d67d6;
+        }
+
+        .modal-buttons button#cancelPersona,
+        .modal-buttons button#cancelChatName {
+            background: #666;
+            color: white;
+        }
+
+        .modal-buttons button#cancelPersona:hover,
+        .modal-buttons button#cancelChatName:hover {
+            background: #777;
+        }
+
+        .modal-buttons button#deletePersona {
+            background: #ff4444;
+            color: white;
+        }
+
+        .modal-buttons button#deletePersona:hover {
+            background: #cc3333;
         }
 
         .color-palette {
@@ -296,18 +330,109 @@
         .current-color {
             flex-shrink: 0;
         }
+
+        /* Chats menu styles */
+        .chats-menu {
+            position: relative;
+            display: inline-block;
+        }
+
+        .chats-button {
+            padding: 10px;
+            background: #333;
+            color: white;
+            border: 1px solid #555;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .chats-dropdown {
+            display: none;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: #222;
+            border: 1px solid #555;
+            border-radius: 5px;
+            min-width: 200px;
+            max-height: 300px;
+            overflow-y: auto;
+            z-index: 1001;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+        }
+
+        .chats-dropdown.show {
+            display: block;
+        }
+
+        .chat-item {
+            padding: 10px;
+            border-bottom: 1px solid #333;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .chat-item:hover {
+            background: #333;
+        }
+
+        .chat-item.active {
+            background: #bb86fc;
+            color: black;
+        }
+
+        .chat-item-actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .chat-action-btn {
+            background: #444;
+            border: 1px solid #666;
+            color: white;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 12px;
+            margin: 0 2px;
+        }
+
+        .chat-action-btn:hover {
+            background: #555;
+            border-color: #777;
+        }
+
+        .new-chat-btn {
+            padding: 10px;
+            background: #03DAC6;
+            color: black;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+        }
     </style>
 </head>
 <body>
     <h1 class="spoiler">selfcest the mirror chat</h1>
     
-    <div class="controls">
-        <div class="personas-container" id="personasContainer"></div>
+    <div class="top-controls">
+        <div class="chats-menu">
+            <button class="chats-button" id="chatsButton">Chats ▾</button>
+            <div class="chats-dropdown" id="chatsDropdown"></div>
+        </div>
+        <span id="currentChatName" style="margin-left: 10px; font-weight: bold;">Main Chat</span>
+        
+        <div style="flex: 1;"></div> <!-- Spacer -->
+        
         <div>
-            <button id="clearButton">clear chat</button>
+            <button class="new-chat-btn" id="newChatButton">New Chat</button>
             <button id="exportButton">export chat</button>
+            <button id="clearButton">clear chat</button>
         </div>
     </div>
+
     
     <div id="chatMessages"></div>
     
@@ -315,6 +440,9 @@
         <textarea id="messageInput" placeholder="type message..." rows="1"></textarea>
         <button id="sendButton">send</button>
     </div>
+
+        <div class="personas-container" id="personasContainer"></div>
+
 
     <div id="personaModal" class="modal">
         <div class="modal-content">
@@ -337,6 +465,17 @@
         </div>
     </div>
 
+    <div id="chatNameModal" class="modal">
+        <div class="modal-content">
+            <h3 id="chatNameModalTitle">Rename Chat</h3>
+            <input type="text" id="chatNameInput" placeholder="Chat name" maxlength="30">
+            <div class="modal-buttons">
+                <button id="cancelChatName">Cancel</button>
+                <button id="saveChatName">Save</button>
+            </div>
+        </div>
+    </div>
+
     <footer>is this private. <span class="spoiler">yes. this js uses the local storage.</span></footer>
 
     <script>
@@ -355,15 +494,186 @@
         const cancelPersona = document.getElementById('cancelPersona');
         const deletePersona = document.getElementById('deletePersona');
         const modalTitle = document.getElementById('modalTitle');
+        const chatsButton = document.getElementById('chatsButton');
+        const chatsDropdown = document.getElementById('chatsDropdown');
+        const newChatButton = document.getElementById('newChatButton');
+        const chatNameModal = document.getElementById('chatNameModal');
+        const chatNameInput = document.getElementById('chatNameInput');
+        const saveChatName = document.getElementById('saveChatName');
+        const cancelChatName = document.getElementById('cancelChatName');
+        const chatNameModalTitle = document.getElementById('chatNameModalTitle');
+        const currentChatName = document.getElementById('currentChatName');
         
         let personas = [];
         let activePersonaId = null;
         let editingPersonaId = null;
         let selectedColor = '#bb86fc';
         let lastClickTime = 0;
+        let currentChatId = null;
+        let editingChatId = null;
         
-        function initializePersonas() {
-            const savedPersonas = localStorage.getItem('mirrorChatPersonas');
+        // Initialize chats
+        function initializeChats() {
+            let chats = localStorage.getItem('mirrorChats');
+            if (!chats) {
+                // Create first chat
+                const firstChat = {
+                    id: 'chat_' + Date.now(),
+                    name: 'Main Chat',
+                    createdAt: new Date().toISOString()
+                };
+                chats = [firstChat];
+                localStorage.setItem('mirrorChats', JSON.stringify(chats));
+                currentChatId = firstChat.id;
+                localStorage.setItem('mirrorChatCurrent', currentChatId);
+            } else {
+                chats = JSON.parse(chats);
+                const savedCurrent = localStorage.getItem('mirrorChatCurrent');
+                currentChatId = savedCurrent || chats[0].id;
+            }
+            
+            renderChatsMenu();
+            loadCurrentChat();
+        }
+        
+        function renderChatsMenu() {
+            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
+            chatsDropdown.innerHTML = '';
+            
+            chats.forEach(chat => {
+                const chatItem = document.createElement('div');
+                chatItem.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
+                
+                const chatName = document.createElement('span');
+                chatName.textContent = chat.name;
+                chatName.style.flex = '1';
+                
+                const actions = document.createElement('div');
+                actions.className = 'chat-item-actions';
+                
+                const renameBtn = document.createElement('button');
+                renameBtn.className = 'chat-action-btn';
+                renameBtn.innerHTML = '✎';
+                renameBtn.title = 'Rename';
+                renameBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    renameChat(chat.id);
+                };
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'chat-action-btn';
+                deleteBtn.innerHTML = '×';
+                deleteBtn.title = 'Delete';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    deleteChat(chat.id);
+                };
+                
+                actions.appendChild(renameBtn);
+                if (chats.length > 1) {
+                    actions.appendChild(deleteBtn);
+                }
+                
+                chatItem.appendChild(chatName);
+                chatItem.appendChild(actions);
+                
+                chatItem.onclick = () => {
+                    switchToChat(chat.id);
+                    chatsDropdown.classList.remove('show');
+                };
+                
+                chatsDropdown.appendChild(chatItem);
+            });
+        }
+        
+        function switchToChat(chatId) {
+            // Save current chat state
+            saveCurrentChat();
+            
+            // Switch to new chat
+            currentChatId = chatId;
+            localStorage.setItem('mirrorChatCurrent', chatId);
+            
+            // Update current chat name display
+            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
+            const currentChat = chats.find(chat => chat.id === chatId);
+            if (currentChat) {
+                currentChatName.textContent = currentChat.name;
+            }
+            
+            loadCurrentChat();
+            renderChatsMenu();
+        }
+        
+        function createNewChat() {
+            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
+            const newChat = {
+                id: 'chat_' + Date.now(),
+                name: `Chat ${chats.length + 1}`,
+                createdAt: new Date().toISOString()
+            };
+            
+            chats.push(newChat);
+            localStorage.setItem('mirrorChats', JSON.stringify(chats));
+            
+            switchToChat(newChat.id);
+            renameChat(newChat.id); // Immediately open rename modal
+        }
+        
+        function renameChat(chatId) {
+            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
+            const chat = chats.find(c => c.id === chatId);
+            if (!chat) return;
+            
+            editingChatId = chatId;
+            chatNameInput.value = chat.name;
+            chatNameModalTitle.textContent = 'Rename Chat';
+            chatNameModal.style.display = 'flex';
+            chatNameInput.focus();
+        }
+        
+        function deleteChat(chatId) {
+            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
+            if (chats.length <= 1) {
+                alert('You must have at least one chat.');
+                return;
+            }
+            
+            if (confirm("You can't undone deleting the chat.")) {
+                const filteredChats = chats.filter(chat => chat.id !== chatId);
+                localStorage.setItem('mirrorChats', JSON.stringify(filteredChats));
+                
+                // Remove chat data
+                localStorage.removeItem(`mirrorChat_${chatId}`);
+                localStorage.removeItem(`mirrorChatPersonas_${chatId}`);
+                
+                if (currentChatId === chatId) {
+                    switchToChat(filteredChats[0].id);
+                } else {
+                    renderChatsMenu();
+                }
+            }
+        }
+        
+        function saveCurrentChat() {
+            if (!currentChatId) return;
+            
+            // Save personas for current chat
+            localStorage.setItem(`mirrorChatPersonas_${currentChatId}`, JSON.stringify(personas));
+            localStorage.setItem(`mirrorChatActivePersona_${currentChatId}`, activePersonaId);
+            
+            // Save messages for current chat
+            const saved = localStorage.getItem('mirrorChat');
+            if (saved) {
+                localStorage.setItem(`mirrorChat_${currentChatId}`, saved);
+            }
+        }
+        
+        function loadCurrentChat() {
+            if (!currentChatId) return;
+            
+            // Load personas for current chat
+            const savedPersonas = localStorage.getItem(`mirrorChatPersonas_${currentChatId}`);
             if (savedPersonas) {
                 personas = JSON.parse(savedPersonas);
             } else {
@@ -374,13 +684,83 @@
                 savePersonas();
             }
             
-            const savedActive = localStorage.getItem('mirrorChatActivePersona');
+            // Load active persona for current chat
+            const savedActive = localStorage.getItem(`mirrorChatActivePersona_${currentChatId}`);
             activePersonaId = savedActive || personas[0].id;
             
+            // Load messages for current chat
+            const savedMessages = localStorage.getItem(`mirrorChat_${currentChatId}`);
+            if (savedMessages) {
+                localStorage.setItem('mirrorChat', savedMessages);
+            } else {
+                localStorage.removeItem('mirrorChat');
+            }
+            
             renderPersonas();
-            initializeColorPalette();
+            renderChat();
         }
         
+        function savePersonas() {
+            if (currentChatId) {
+                localStorage.setItem(`mirrorChatPersonas_${currentChatId}`, JSON.stringify(personas));
+            }
+        }
+        
+        function setActivePersona(personaId) {
+            activePersonaId = personaId;
+            if (currentChatId) {
+                localStorage.setItem(`mirrorChatActivePersona_${currentChatId}`, personaId);
+            }
+            
+            // Update active state immediately
+            document.querySelectorAll('.persona').forEach(el => {
+                el.classList.remove('active');
+            });
+            const activeEl = Array.from(document.querySelectorAll('.persona')).find(el => {
+                const persona = personas.find(p => p.symbol === el.textContent && p.color === el.style.background);
+                return persona && persona.id === personaId;
+            });
+            if (activeEl) {
+                activeEl.classList.add('active');
+            }
+            
+            renderChat();
+        }
+        
+        function sendMessage() {
+            const text = messageInput.value.trim();
+            if (!text) return;
+            
+            const messageData = {
+                personaId: activePersonaId,
+                text: text,
+                timestamp: Date.now()
+            };
+            
+            const saved = localStorage.getItem('mirrorChat');
+            const messages = saved ? JSON.parse(saved) : [];
+            messages.push(messageData);
+            localStorage.setItem('mirrorChat', JSON.stringify(messages));
+            
+            // Also save to current chat storage
+            if (currentChatId) {
+                localStorage.setItem(`mirrorChat_${currentChatId}`, JSON.stringify(messages));
+            }
+            
+            messageInput.value = '';
+            renderChat();
+        }
+        
+        function clearChat() {
+            if (confirm("You can't undone clearing the chat.")) {
+                localStorage.removeItem('mirrorChat');
+                if (currentChatId) {
+                    localStorage.removeItem(`mirrorChat_${currentChatId}`);
+                }
+                renderChat();
+            }
+        }
+
         function initializeColorPalette() {
             colorPalette.addEventListener('click', (e) => {
                 const rect = colorPalette.getBoundingClientRect();
@@ -389,26 +769,19 @@
                 const width = rect.width;
                 const height = rect.height;
                 
-                // Calculate hue from x position (0 to 360)
                 const hue = (x / width) * 360;
-                
-                // Calculate saturation and lightness from y position
                 let saturation, lightness;
                 if (y < height / 2) {
-                    // Top half: white to saturated
                     saturation = (y / (height / 2)) * 100;
                     lightness = 50 + (50 * (1 - y / (height / 2)));
                 } else {
-                    // Bottom half: saturated to black
                     saturation = 100 - ((y - height / 2) / (height / 2)) * 100;
                     lightness = 50 - (50 * ((y - height / 2) / (height / 2)));
                 }
                 
-                // Clamp values
                 saturation = Math.max(0, Math.min(100, saturation));
                 lightness = Math.max(0, Math.min(100, lightness));
                 
-                // Convert to hex
                 selectedColor = hslToHex(hue, saturation, lightness);
                 updateColorPreview();
             });
@@ -422,7 +795,7 @@
             let r, g, b;
             
             if (s === 0) {
-                r = g = b = l; // achromatic
+                r = g = b = l;
             } else {
                 const hue2rgb = (p, q, t) => {
                     if (t < 0) t += 1;
@@ -474,11 +847,11 @@
                 
                 personaEl.addEventListener('click', (e) => {
                     const currentTime = Date.now();
-                    if (currentTime - lastClickTime < 300) { // Double click
+                    if (currentTime - lastClickTime < 300) {
                         e.preventDefault();
                         e.stopPropagation();
                         editPersona(persona.id);
-                    } else { // Single click
+                    } else {
                         setActivePersona(persona.id);
                     }
                     lastClickTime = currentTime;
@@ -506,25 +879,6 @@
             addWrapper.appendChild(addPersonaEl);
             addWrapper.appendChild(addNameEl);
             personasContainer.appendChild(addWrapper);
-        }
-        
-        function setActivePersona(personaId) {
-            activePersonaId = personaId;
-            localStorage.setItem('mirrorChatActivePersona', personaId);
-            
-            // Update active state immediately
-            document.querySelectorAll('.persona').forEach(el => {
-                el.classList.remove('active');
-            });
-            const activeEl = Array.from(document.querySelectorAll('.persona')).find(el => {
-                const persona = personas.find(p => p.symbol === el.textContent && p.color === el.style.background);
-                return persona && persona.id === personaId;
-            });
-            if (activeEl) {
-                activeEl.classList.add('active');
-            }
-            
-            renderChat();
         }
         
         function renderChat() {
@@ -585,7 +939,6 @@
             deletePersona.style.display = 'none';
             personaName.value = '';
             personaSymbol.value = '';
-            // Clear the stored first character
             delete personaName.dataset.lastFirstChar;
             selectedColor = '#bb86fc';
             updateColorPreview();
@@ -603,7 +956,6 @@
             personaName.value = persona.name;
             personaSymbol.value = persona.symbol;
             selectedColor = persona.color;
-            // Store the current first character for smart updating
             personaName.dataset.lastFirstChar = persona.name.charAt(0).toUpperCase();
             updateColorPreview();
             personaModal.style.display = 'flex';
@@ -614,7 +966,6 @@
             const name = personaName.value.trim();
             if (!name) return;
             
-            // Auto-generate symbol from first letter of name
             let symbol = personaSymbol.value.trim();
             if (!symbol && name.length > 0) {
                 symbol = name.charAt(0).toUpperCase();
@@ -639,7 +990,6 @@
                     color: selectedColor
                 };
                 personas.push(newPersona);
-                // Auto-select newly created persona
                 setActivePersona(newPersonaId);
             }
             
@@ -665,36 +1015,6 @@
             personaModal.style.display = 'none';
         }
         
-        function savePersonas() {
-            localStorage.setItem('mirrorChatPersonas', JSON.stringify(personas));
-        }
-        
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text) return;
-            
-            const messageData = {
-                personaId: activePersonaId,
-                text: text,
-                timestamp: Date.now()
-            };
-            
-            const saved = localStorage.getItem('mirrorChat');
-            const messages = saved ? JSON.parse(saved) : [];
-            messages.push(messageData);
-            localStorage.setItem('mirrorChat', JSON.stringify(messages));
-            
-            messageInput.value = '';
-            renderChat();
-        }
-
-        function clearChat() {
-            if (confirm('Are you sure you want to clear the chat?')) {
-                localStorage.removeItem('mirrorChat');
-                renderChat();
-            }
-        }
-
         function exportChat() {
             const saved = localStorage.getItem('mirrorChat');
             if (!saved) return;
@@ -747,16 +1067,13 @@
             }
         });
 
-        // Auto-fill symbol when typing name (only if symbol is empty or matches old first letter)
         personaName.addEventListener('input', (e) => {
             const name = e.target.value;
             const symbolField = personaSymbol.value.trim();
             
-            // Don't auto-fill if symbol looks like an emoji or special character
             const isEmoji = symbolField.length === 1 && /\p{Emoji}/u.test(symbolField);
             const isSpecialSymbol = symbolField.length === 1 && /[^a-zA-Z0-9\s]/.test(symbolField);
             
-            // If symbol is empty OR symbol matches the old first character AND not an emoji/special symbol
             if ((!symbolField || symbolField === personaName.dataset.lastFirstChar) && !isEmoji && !isSpecialSymbol) {
                 if (name.length > 0) {
                     const newFirstChar = name.charAt(0).toUpperCase();
@@ -775,10 +1092,55 @@
             }
         });
 
+        // Chat management event listeners
+        chatsButton.addEventListener('click', () => {
+            chatsDropdown.classList.toggle('show');
+        });
+
+        newChatButton.addEventListener('click', createNewChat);
+
+        saveChatName.addEventListener('click', () => {
+            const newName = chatNameInput.value.trim();
+            if (newName && editingChatId) {
+                const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
+                const chatIndex = chats.findIndex(chat => chat.id === editingChatId);
+                if (chatIndex !== -1) {
+                    chats[chatIndex].name = newName;
+                    localStorage.setItem('mirrorChats', JSON.stringify(chats));
+                    renderChatsMenu();
+                    currentChatName.textContent = newName;
+                }
+            }
+            chatNameModal.style.display = 'none';
+        });
+
+        cancelChatName.addEventListener('click', () => {
+            chatNameModal.style.display = 'none';
+        });
+
+        chatNameModal.addEventListener('click', (e) => {
+            if (e.target === chatNameModal) {
+                chatNameModal.style.display = 'none';
+            }
+        });
+
+        chatNameInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                saveChatName.click();
+            }
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', (e) => {
+            if (!chatsButton.contains(e.target) && !chatsDropdown.contains(e.target)) {
+                chatsDropdown.classList.remove('show');
+            }
+        });
+
         // Initialize
         document.addEventListener('DOMContentLoaded', () => {
-            initializePersonas();
-            renderChat();
+            initializeChats();
+            initializeColorPalette();
             updateColorPreview();
         });
     </script>

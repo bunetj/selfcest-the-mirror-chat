@@ -1,1148 +1,1411 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>selfcest the mirror chat. talk to yourself (web app)</title>
     <style>
-        body {
-            background: #121212;
-            color: white;
-            font-family: Arial;
-            margin: 0;
-            padding: 20px;
-        }
-        
-        .message-container {
-            display: flex;
-            margin: 10px 0;
-            align-items: flex-start;
-        }
-        
-        .message-container.sent {
-            justify-content: flex-end;
-        }
-        
-        .message-container.received {
-            justify-content: flex-start;
-        }
-        
-        .message-bubble {
-            padding: 10px 15px;
-            border-radius: 18px;
-            max-width: 70%;
-            word-wrap: break-word;
-            position: relative;
-        }
-        
-        .sent .message-bubble {
-            background: #bb86fc;
-            color: black;
-            border-bottom-right-radius: 4px;
-        }
-        
-        .received .message-bubble {
-            background: #333;
-            border-bottom-left-radius: 4px;
-        }
-        
-        .profile-pic {
-            width: 35px;
-            height: 35px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            font-size: 14px;
-            margin: 0 8px;
-            flex-shrink: 0;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        
-        .sent .profile-pic {
-            order: 2;
-            margin-left: 8px;
-            margin-right: 0;
-        }
-        
-        .received .profile-pic {
-            order: 0;
-            margin-right: 8px;
-            margin-left: 0;
-        }
-        
-        .message-name {
-            font-size: 12px;
-            margin-bottom: 5px;
-            opacity: 0.8;
-            padding: 0 45px;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-        
-        .name-sent {
-            text-align: right;
-        }
-        
-        .name-received {
-            text-align: left;
-        }
-        
-        #messageInput {
-            width: 80%;
-            padding: 10px;
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            resize: none;
-            font-family: Arial;
-        }
-        
-        #sendButton {
-            padding: 10px;
-            background: #bb86fc;
-            color: black;
-            border: none;
-            cursor: pointer;
-        }
-        
-        #chatMessages {
-            height: 400px;
-            overflow-y: auto;
-            border: 1px solid #333;
-            padding: 10px;
-            margin-bottom: 10px;
+      body {
+        background: #121212;
+        color: white;
+        font-family: Arial;
+        margin: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      .app-container {
+        display: flex;
+        width: 100%;
+        height: 100%;
+      }
+
+      .sidebar {
+        width: 280px;
+        background: #1e1e1e;
+        border-right: 1px solid #333;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid #333;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .sidebar-header h3 {
+        margin: 0;
+        color: #bb86fc;
+      }
+
+      .chats-controls {
+        padding: 15px;
+        border-bottom: 1px solid #333;
+      }
+
+      .sidebar-new-chat {
+        width: 100%;
+        padding: 12px;
+        background: #bb86fc;
+        color: black;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .chats-list {
+        flex: 1;
+        overflow-y: auto;
+        padding: 0;
+      }
+
+      .chat-item {
+        padding: 12px 15px;
+        border-bottom: 1px solid #333;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .chat-item:hover {
+        background: #2a2a2a;
+      }
+
+      .chat-item.active {
+        background: #bb86fc;
+        color: black;
+      }
+
+      .chat-item-actions {
+        display: flex;
+        gap: 5px;
+      }
+
+      .chat-action-btn {
+        background: #444;
+        border: 1px solid #666;
+        color: white;
+        cursor: pointer;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 12px;
+      }
+
+      .main-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .top-bar {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        border-bottom: 1px solid #333;
+        background: #1e1e1e;
+      }
+
+      .menu-toggle {
+        background: #333;
+        color: white;
+        border: none;
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 5px;
+        margin-right: 15px;
+      }
+
+      #currentChatName {
+        font-weight: bold;
+        font-size: 18px;
+      }
+
+      .top-controls {
+        margin-left: auto;
+        display: flex;
+        gap: 10px;
+      }
+
+      .new-chat-btn,
+      #exportButton,
+      #clearButton {
+        padding: 8px 12px;
+        background: #03dac6;
+        color: black;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        font-weight: bold;
+      }
+
+      #exportButton {
+        background: #bb86fc;
+      }
+
+      #clearButton {
+        background: #ff4444;
+        color: white;
+      }
+
+      #chatMessages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .input-area {
+        padding: 20px;
+        border-top: 1px solid #333;
+        background: #1e1e1e;
+      }
+
+      .input-container {
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
+      }
+
+      #messageInput {
+        flex: 1;
+        padding: 10px;
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+        resize: none;
+        font-family: Arial;
+        border-radius: 5px;
+      }
+
+      #sendButton {
+        padding: 10px 20px;
+        background: #bb86fc;
+        color: black;
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+      }
+
+      .personas-container {
+        display: flex;
+        gap: 15px;
+        margin-top: 15px;
+        flex-wrap: wrap;
+        align-items: flex-end;
+      }
+
+      .message-container {
+        display: flex;
+        margin: 10px 0;
+        align-items: flex-start;
+      }
+
+      .message-container.sent {
+        justify-content: flex-end;
+      }
+
+      .message-container.received {
+        justify-content: flex-start;
+      }
+
+      .message-bubble {
+        padding: 10px 15px;
+        border-radius: 18px;
+        max-width: 70%;
+        overflow-wrap: break-word;
+      }
+
+      .sent .message-bubble {
+        background: #bb86fc;
+        color: black;
+        border-bottom-right-radius: 4px;
+      }
+
+      .received .message-bubble {
+        background: #333;
+        border-bottom-left-radius: 4px;
+      }
+
+      .profile-pic {
+        width: 35px;
+        height: 35px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        font-size: 14px;
+        margin: 0 8px;
+        flex-shrink: 0;
+        user-select: none;
+      }
+
+      .sent .profile-pic {
+        order: 2;
+        margin-left: 8px;
+        margin-right: 0;
+      }
+
+      .received .profile-pic {
+        order: 0;
+        margin-right: 8px;
+        margin-left: 0;
+      }
+
+      .message-name {
+        font-size: 12px;
+        margin-bottom: 5px;
+        opacity: 0.8;
+        padding: 0 45px;
+        user-select: none;
+      }
+
+      .name-sent {
+        text-align: right;
+      }
+
+      .name-received {
+        text-align: left;
+      }
+
+      .persona-wrapper {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .persona {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border: 2px solid transparent;
+        font-weight: bold;
+        font-size: 14px;
+        user-select: none;
+        transition: border-color 0.1s ease;
+      }
+
+      .persona.active {
+        border-color: #bb86fc;
+      }
+
+      .persona.add-persona {
+        background: #333;
+        border: 2px dashed #555;
+        font-size: 20px;
+      }
+
+      .persona-name {
+        font-size: 11px;
+        color: #888;
+        text-align: center;
+        max-width: 50px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        user-select: none;
+      }
+
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        justify-content: center;
+        align-items: center;
+        z-index: 1002;
+      }
+
+      .modal-content {
+        background: #222;
+        padding: 20px;
+        border-radius: 10px;
+        width: 340px;
+        max-width: 90vw;
+      }
+
+      .modal input {
+        width: 100%;
+        padding: 8px;
+        margin: 5px 0;
+        background: #333;
+        color: white;
+        border: 1px solid #555;
+      }
+
+      .modal-buttons {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 15px;
+      }
+
+      .modal-buttons button {
+        padding: 8px 16px;
+        background: #bb86fc;
+        color: black;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+
+      .color-palette {
+        width: 100%;
+        height: 120px;
+        border-radius: 8px;
+        margin: 10px 0;
+        cursor: crosshair;
+        border: 2px solid #444;
+        background: linear-gradient(
+          to right,
+          #ff0000,
+          #ffff00,
+          #00ff00,
+          #00ffff,
+          #0000ff,
+          #ff00ff,
+          #ff0000
+        );
+        position: relative;
+        overflow: hidden;
+      }
+
+      .color-palette::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 1),
+          rgba(255, 255, 255, 0.5),
+          rgba(0, 0, 0, 0),
+          rgba(0, 0, 0, 0.5),
+          rgba(0, 0, 0, 1)
+        );
+      }
+
+      .color-preview {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        margin: 10px auto;
+        border: 2px solid #666;
+        background: var(--selected-color, #bb86fc);
+      }
+
+      .symbol-input {
+        text-align: center;
+        font-size: 18px;
+        height: 40px;
+      }
+
+      .color-controls {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin: 10px 0;
+      }
+
+      .spoiler {
+        color: transparent;
+      }
+
+      .spoiler:hover {
+        color: inherit;
+      }
+
+      footer {
+        color: grey;
+        margin-top: 2em;
+        padding: 0 20px 20px;
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          position: fixed;
+          left: 0;
+          top: 0;
+          height: 100%;
+          z-index: 1001;
+          transform: translateX(-100%);
+          transition: transform 0.3s ease;
         }
 
-        #clearButton {
-            padding: 10px;
-            background: #ff4444;
-            color: white;
-            border: none;
-            cursor: pointer;
-            margin-left: 5px;
+        .sidebar.open {
+          transform: translateX(0);
         }
-
-        #exportButton {
-            padding: 10px;
-            background: #03DAC6;
-            color: black;
-            border: none;
-            cursor: pointer;
-            margin-left: 5px;
-        }
-        
-        .input-container {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-        }
-
-        .spoiler{color: transparent}
-        .spoiler:hover {color: inherit}
-        footer {color: grey; margin-top: 2em}
-        
-        .personas-container {
-            display: flex;
-            gap: 15px;
-            margin-top: 10px;
-            flex-wrap: wrap;
-            align-items: flex-end;
-        }
-        
-        .persona-wrapper {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        .persona {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            border: 2px solid transparent;
-            font-weight: bold;
-            position: relative;
-            font-size: 14px;
-            user-select: none;
-            -webkit-user-select: none;
-            transition: border-color 0.1s ease;
-        }
-        
-        .persona.active {
-            border-color: #bb86fc;
-        }
-        
-        .persona.add-persona {
-            background: #333;
-            border: 2px dashed #555;
-            font-size: 20px;
-        }
-
-        .persona-name {
-            font-size: 11px;
-            color: #888;
-            text-align: center;
-            max-width: 50px;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            white-space: nowrap;
-            user-select: none;
-            -webkit-user-select: none;
-        }
-
-        .top-controls {
-            display: flex;
-            align-items: center;
-            margin-bottom: 10px;
-            gap: 10px;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-
-        .modal-content {
-            background: #222;
-            padding: 20px;
-            border-radius: 10px;
-            width: 340px;
-            max-width: 90vw;
-        }
-
-        .modal input {
-            width: 100%;
-            padding: 8px;
-            margin: 5px 0;
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-        }
-
-        .modal-buttons {
-            display: flex;
-            justify-content: space-between;
-            margin-top: 15px;
-        }
-
-        .modal-buttons button {
-            padding: 8px 16px;
-            background: #bb86fc;
-            color: black;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-
-        .modal-buttons button:hover {
-            background: #9d67d6;
-        }
-
-        .modal-buttons button#cancelPersona,
-        .modal-buttons button#cancelChatName {
-            background: #666;
-            color: white;
-        }
-
-        .modal-buttons button#cancelPersona:hover,
-        .modal-buttons button#cancelChatName:hover {
-            background: #777;
-        }
-
-        .modal-buttons button#deletePersona {
-            background: #ff4444;
-            color: white;
-        }
-
-        .modal-buttons button#deletePersona:hover {
-            background: #cc3333;
-        }
-
-        .color-palette {
-            width: 100%;
-            height: 120px;
-            border-radius: 8px;
-            margin: 10px 0;
-            cursor: crosshair;
-            border: 2px solid #444;
-            background: linear-gradient(to right, 
-                #ff0000, #ffff00, #00ff00, #00ffff, #0000ff, #ff00ff, #ff0000
-            );
-            position: relative;
-            overflow: hidden;
-        }
-
-        .color-palette::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(to bottom, 
-                rgba(255,255,255,1), 
-                rgba(255,255,255,0.5), 
-                rgba(0,0,0,0), 
-                rgba(0,0,0,0.5), 
-                rgba(0,0,0,1)
-            );
-        }
-
-        .color-preview {
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            margin: 10px auto;
-            border: 2px solid #666;
-            background: var(--selected-color, #bb86fc);
-        }
-
-        .symbol-input {
-            text-align: center;
-            font-size: 18px;
-            height: 40px;
-        }
-
-        .color-controls {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin: 10px 0;
-        }
-
-        .current-color {
-            flex-shrink: 0;
-        }
-
-        /* Chats menu styles */
-        .chats-menu {
-            position: relative;
-            display: inline-block;
-        }
-
-        .chats-button {
-            padding: 10px;
-            background: #333;
-            color: white;
-            border: 1px solid #555;
-            cursor: pointer;
-            border-radius: 5px;
-        }
-
-        .chats-dropdown {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            background: #222;
-            border: 1px solid #555;
-            border-radius: 5px;
-            min-width: 200px;
-            max-height: 300px;
-            overflow-y: auto;
-            z-index: 1001;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
-        }
-
-        .chats-dropdown.show {
-            display: block;
-        }
-
-        .chat-item {
-            padding: 10px;
-            border-bottom: 1px solid #333;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chat-item:hover {
-            background: #333;
-        }
-
-        .chat-item.active {
-            background: #bb86fc;
-            color: black;
-        }
-
-        .chat-item-actions {
-            display: flex;
-            gap: 5px;
-        }
-
-        .chat-action-btn {
-            background: #444;
-            border: 1px solid #666;
-            color: white;
-            cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 3px;
-            font-size: 12px;
-            margin: 0 2px;
-        }
-
-        .chat-action-btn:hover {
-            background: #555;
-            border-color: #777;
-        }
-
-        .new-chat-btn {
-            padding: 10px;
-            background: #03DAC6;
-            color: black;
-            border: none;
-            cursor: pointer;
-            margin-left: 5px;
-        }
+      }
     </style>
-</head>
-<body>
-    <h1 class="spoiler">selfcest the mirror chat</h1>
-    
-    <div class="top-controls">
-        <div class="chats-menu">
-            <button class="chats-button" id="chatsButton">Chats ▾</button>
-            <div class="chats-dropdown" id="chatsDropdown"></div>
+  </head>
+
+  <body>
+    <div class="app-container">
+      <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h3>Chats</h3>
         </div>
-        <span id="currentChatName" style="margin-left: 10px; font-weight: bold;">Main Chat</span>
-        
-        <div style="flex: 1;"></div> <!-- Spacer -->
-        
-        <div>
-            <button class="new-chat-btn" id="newChatButton">New Chat</button>
-            <button id="exportButton">export chat</button>
-            <button id="clearButton">clear chat</button>
+        <div class="chats-controls">
+          <button class="sidebar-new-chat" id="sidebarNewChat">
+            + New Chat
+          </button>
         </div>
+        <div class="chats-list" id="chatsList"></div>
+        <footer>
+          <button
+            id="infoButton"
+            style="
+              background: #333;
+              color: #888;
+              border: 1px solid #555;
+              padding: 8px 12px;
+              border-radius: 5px;
+              cursor: pointer;
+              width: 50px;
+            "
+          >
+            ℹ️ Info
+          </button>
+        </footer>
+
+        <div id="infoModal" class="modal">
+          <div class="modal-content">
+            <h3>Info & Controls</h3>
+            <p>• Private: Uses local storage only</p>
+            <p>• Switch personas: Ctrl + `</p>
+            <p>• Edit persona: Right click</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="main-content" id="mainContent">
+        <div class="top-bar">
+          <button class="menu-toggle" id="menuToggle">☰</button>
+          <span id="currentChatName">Main Chat</span>
+          <div class="top-controls">
+            <button class="new-chat-btn" id="newChatButton">+ New</button>
+            <button id="exportButton">📥 Export</button>
+            <button id="clearButton">🧹 Clear</button>
+          </div>
+        </div>
+
+        <div id="chatMessages"></div>
+
+        <div class="input-area">
+          <div class="input-container">
+            <textarea
+              id="messageInput"
+              placeholder="type message..."
+              rows="1"
+            ></textarea>
+            <button id="sendButton">send</button>
+          </div>
+          <div class="personas-container" id="personasContainer"></div>
+        </div>
+      </div>
     </div>
-
-    
-    <div id="chatMessages"></div>
-    
-    <div class="input-container">
-        <textarea id="messageInput" placeholder="type message..." rows="1"></textarea>
-        <button id="sendButton">send</button>
-    </div>
-
-        <div class="personas-container" id="personasContainer"></div>
-
 
     <div id="personaModal" class="modal">
-        <div class="modal-content">
-            <h3 id="modalTitle">Create Persona</h3>
-            <input type="text" id="personaName" placeholder="Persona name" maxlength="20">
-            <input type="text" id="personaSymbol" placeholder="Profile symbol (1-2 chars)" maxlength="2" class="symbol-input">
-            
-            <div style="text-align: center; margin: 10px 0;">Click on the palette to choose color:</div>
-            
-            <div class="color-controls">
-                <div class="color-preview" id="colorPreview"></div>
-                <div class="color-palette" id="colorPalette"></div>
-            </div>
-            
-            <div class="modal-buttons">
-                <button id="cancelPersona">Cancel</button>
-                <button id="deletePersona" style="background: #ff4444; display: none;">Delete</button>
-                <button id="savePersona">Save</button>
-            </div>
+      <div class="modal-content">
+        <h3 id="modalTitle">Create Persona</h3>
+        <input type="text" id="personaName" placeholder="Persona name" />
+        <input
+          type="text"
+          id="personaSymbol"
+          placeholder="Profile symbol (1-2 chars)"
+          class="symbol-input"
+        />
+
+        <div style="text-align: center; margin: 10px 0">
+          Click on the palette to choose color:
         </div>
+
+        <div class="color-controls">
+          <div class="color-preview" id="colorPreview"></div>
+          <div class="color-palette" id="colorPalette"></div>
+        </div>
+
+        <div class="modal-buttons">
+          <button id="cancelPersona">Cancel</button>
+          <button id="deletePersona" style="background: #ff4444; display: none">
+            Delete
+          </button>
+          <button id="savePersona">Save</button>
+        </div>
+      </div>
     </div>
 
     <div id="chatNameModal" class="modal">
-        <div class="modal-content">
-            <h3 id="chatNameModalTitle">Rename Chat</h3>
-            <input type="text" id="chatNameInput" placeholder="Chat name" maxlength="30">
-            <div class="modal-buttons">
-                <button id="cancelChatName">Cancel</button>
-                <button id="saveChatName">Save</button>
-            </div>
+      <div class="modal-content">
+        <h3 id="chatNameModalTitle">Rename Chat</h3>
+        <input
+          type="text"
+          id="chatNameInput"
+          placeholder="Chat name"
+          maxlength="30"
+        />
+        <div class="modal-buttons">
+          <button id="cancelChatName">Cancel</button>
+          <button id="saveChatName">Save</button>
         </div>
+      </div>
     </div>
 
-    <footer>is this private. <span class="spoiler">yes. this js uses the local storage.</span></footer>
-
     <script>
-        const chatMessages = document.getElementById('chatMessages');
-        const messageInput = document.getElementById('messageInput');
-        const sendButton = document.getElementById('sendButton');
-        const clearButton = document.getElementById('clearButton');
-        const exportButton = document.getElementById('exportButton');
-        const personasContainer = document.getElementById('personasContainer');
-        const personaModal = document.getElementById('personaModal');
-        const personaName = document.getElementById('personaName');
-        const personaSymbol = document.getElementById('personaSymbol');
-        const colorPalette = document.getElementById('colorPalette');
-        const colorPreview = document.getElementById('colorPreview');
-        const savePersona = document.getElementById('savePersona');
-        const cancelPersona = document.getElementById('cancelPersona');
-        const deletePersona = document.getElementById('deletePersona');
-        const modalTitle = document.getElementById('modalTitle');
-        const chatsButton = document.getElementById('chatsButton');
-        const chatsDropdown = document.getElementById('chatsDropdown');
-        const newChatButton = document.getElementById('newChatButton');
-        const chatNameModal = document.getElementById('chatNameModal');
-        const chatNameInput = document.getElementById('chatNameInput');
-        const saveChatName = document.getElementById('saveChatName');
-        const cancelChatName = document.getElementById('cancelChatName');
-        const chatNameModalTitle = document.getElementById('chatNameModalTitle');
-        const currentChatName = document.getElementById('currentChatName');
-        
-        let personas = [];
-        let activePersonaId = null;
-        let editingPersonaId = null;
-        let selectedColor = '#bb86fc';
-        let lastClickTime = 0;
-        let currentChatId = null;
-        let editingChatId = null;
-        
-        // Initialize chats
-        function initializeChats() {
-            let chats = localStorage.getItem('mirrorChats');
-            if (!chats) {
-                // Create first chat
-                const firstChat = {
-                    id: 'chat_' + Date.now(),
-                    name: 'Main Chat',
-                    createdAt: new Date().toISOString()
-                };
-                chats = [firstChat];
-                localStorage.setItem('mirrorChats', JSON.stringify(chats));
-                currentChatId = firstChat.id;
-                localStorage.setItem('mirrorChatCurrent', currentChatId);
-            } else {
-                chats = JSON.parse(chats);
-                const savedCurrent = localStorage.getItem('mirrorChatCurrent');
-                currentChatId = savedCurrent || chats[0].id;
-            }
-            
-            renderChatsMenu();
-            loadCurrentChat();
-        }
-        
-        function renderChatsMenu() {
-            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
-            chatsDropdown.innerHTML = '';
-            
-            chats.forEach(chat => {
-                const chatItem = document.createElement('div');
-                chatItem.className = `chat-item ${chat.id === currentChatId ? 'active' : ''}`;
-                
-                const chatName = document.createElement('span');
-                chatName.textContent = chat.name;
-                chatName.style.flex = '1';
-                
-                const actions = document.createElement('div');
-                actions.className = 'chat-item-actions';
-                
-                const renameBtn = document.createElement('button');
-                renameBtn.className = 'chat-action-btn';
-                renameBtn.innerHTML = '✎';
-                renameBtn.title = 'Rename';
-                renameBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    renameChat(chat.id);
-                };
-                
-                const deleteBtn = document.createElement('button');
-                deleteBtn.className = 'chat-action-btn';
-                deleteBtn.innerHTML = '×';
-                deleteBtn.title = 'Delete';
-                deleteBtn.onclick = (e) => {
-                    e.stopPropagation();
-                    deleteChat(chat.id);
-                };
-                
-                actions.appendChild(renameBtn);
-                if (chats.length > 1) {
-                    actions.appendChild(deleteBtn);
-                }
-                
-                chatItem.appendChild(chatName);
-                chatItem.appendChild(actions);
-                
-                chatItem.onclick = () => {
-                    switchToChat(chat.id);
-                    chatsDropdown.classList.remove('show');
-                };
-                
-                chatsDropdown.appendChild(chatItem);
-            });
-        }
-        
-        function switchToChat(chatId) {
-            // Save current chat state
-            saveCurrentChat();
-            
-            // Switch to new chat
-            currentChatId = chatId;
-            localStorage.setItem('mirrorChatCurrent', chatId);
-            
-            // Update current chat name display
-            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
-            const currentChat = chats.find(chat => chat.id === chatId);
-            if (currentChat) {
-                currentChatName.textContent = currentChat.name;
-            }
-            
-            loadCurrentChat();
-            renderChatsMenu();
-        }
-        
-        function createNewChat() {
-            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
-            const newChat = {
-                id: 'chat_' + Date.now(),
-                name: `Chat ${chats.length + 1}`,
-                createdAt: new Date().toISOString()
-            };
-            
-            chats.push(newChat);
-            localStorage.setItem('mirrorChats', JSON.stringify(chats));
-            
-            switchToChat(newChat.id);
-            renameChat(newChat.id); // Immediately open rename modal
-        }
-        
-        function renameChat(chatId) {
-            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
-            const chat = chats.find(c => c.id === chatId);
-            if (!chat) return;
-            
-            editingChatId = chatId;
-            chatNameInput.value = chat.name;
-            chatNameModalTitle.textContent = 'Rename Chat';
-            chatNameModal.style.display = 'flex';
-            chatNameInput.focus();
-        }
-        
-        function deleteChat(chatId) {
-            const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
-            if (chats.length <= 1) {
-                alert('You must have at least one chat.');
-                return;
-            }
-            
-            if (confirm("You can't undone deleting the chat.")) {
-                const filteredChats = chats.filter(chat => chat.id !== chatId);
-                localStorage.setItem('mirrorChats', JSON.stringify(filteredChats));
-                
-                // Remove chat data
-                localStorage.removeItem(`mirrorChat_${chatId}`);
-                localStorage.removeItem(`mirrorChatPersonas_${chatId}`);
-                
-                if (currentChatId === chatId) {
-                    switchToChat(filteredChats[0].id);
-                } else {
-                    renderChatsMenu();
-                }
-            }
-        }
-        
-        function saveCurrentChat() {
-            if (!currentChatId) return;
-            
-            // Save personas for current chat
-            localStorage.setItem(`mirrorChatPersonas_${currentChatId}`, JSON.stringify(personas));
-            localStorage.setItem(`mirrorChatActivePersona_${currentChatId}`, activePersonaId);
-            
-            // Save messages for current chat
-            const saved = localStorage.getItem('mirrorChat');
-            if (saved) {
-                localStorage.setItem(`mirrorChat_${currentChatId}`, saved);
-            }
-        }
-        
-        function loadCurrentChat() {
-            if (!currentChatId) return;
-            
-            // Load personas for current chat
-            const savedPersonas = localStorage.getItem(`mirrorChatPersonas_${currentChatId}`);
-            if (savedPersonas) {
-                personas = JSON.parse(savedPersonas);
-            } else {
-                personas = [
-                    { id: 'persona1', name: 'You', color: '#bb86fc', symbol: 'Y' },
-                    { id: 'persona2', name: 'Other', color: '#03DAC6', symbol: 'O' }
-                ];
-                savePersonas();
-            }
-            
-            // Load active persona for current chat
-            const savedActive = localStorage.getItem(`mirrorChatActivePersona_${currentChatId}`);
-            activePersonaId = savedActive || personas[0].id;
-            
-            // Load messages for current chat
-            const savedMessages = localStorage.getItem(`mirrorChat_${currentChatId}`);
-            if (savedMessages) {
-                localStorage.setItem('mirrorChat', savedMessages);
-            } else {
-                localStorage.removeItem('mirrorChat');
-            }
-            
-            renderPersonas();
-            renderChat();
-        }
-        
-        function savePersonas() {
-            if (currentChatId) {
-                localStorage.setItem(`mirrorChatPersonas_${currentChatId}`, JSON.stringify(personas));
-            }
-        }
-        
-        function setActivePersona(personaId) {
-            activePersonaId = personaId;
-            if (currentChatId) {
-                localStorage.setItem(`mirrorChatActivePersona_${currentChatId}`, personaId);
-            }
-            
-            // Update active state immediately
-            document.querySelectorAll('.persona').forEach(el => {
-                el.classList.remove('active');
-            });
-            const activeEl = Array.from(document.querySelectorAll('.persona')).find(el => {
-                const persona = personas.find(p => p.symbol === el.textContent && p.color === el.style.background);
-                return persona && persona.id === personaId;
-            });
-            if (activeEl) {
-                activeEl.classList.add('active');
-            }
-            
-            renderChat();
-        }
-        
-        function sendMessage() {
-            const text = messageInput.value.trim();
-            if (!text) return;
-            
-            const messageData = {
-                personaId: activePersonaId,
-                text: text,
-                timestamp: Date.now()
-            };
-            
-            const saved = localStorage.getItem('mirrorChat');
-            const messages = saved ? JSON.parse(saved) : [];
-            messages.push(messageData);
-            localStorage.setItem('mirrorChat', JSON.stringify(messages));
-            
-            // Also save to current chat storage
-            if (currentChatId) {
-                localStorage.setItem(`mirrorChat_${currentChatId}`, JSON.stringify(messages));
-            }
-            
-            messageInput.value = '';
-            renderChat();
-        }
-        
-        function clearChat() {
-            if (confirm("You can't undone clearing the chat.")) {
-                localStorage.removeItem('mirrorChat');
-                if (currentChatId) {
-                    localStorage.removeItem(`mirrorChat_${currentChatId}`);
-                }
-                renderChat();
-            }
+      // DOM Elements
+      const chatMessages = document.getElementById("chatMessages");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const clearButton = document.getElementById("clearButton");
+      const exportButton = document.getElementById("exportButton");
+      const personasContainer = document.getElementById("personasContainer");
+      const personaModal = document.getElementById("personaModal");
+      const personaName = document.getElementById("personaName");
+      const personaSymbol = document.getElementById("personaSymbol");
+      const colorPalette = document.getElementById("colorPalette");
+      const colorPreview = document.getElementById("colorPreview");
+      const savePersona = document.getElementById("savePersona");
+      const cancelPersona = document.getElementById("cancelPersona");
+      const deletePersona = document.getElementById("deletePersona");
+      const modalTitle = document.getElementById("modalTitle");
+      const chatsList = document.getElementById("chatsList");
+      const sidebarNewChat = document.getElementById("sidebarNewChat");
+      const newChatButton = document.getElementById("newChatButton");
+      const chatNameModal = document.getElementById("chatNameModal");
+      const chatNameInput = document.getElementById("chatNameInput");
+      const saveChatName = document.getElementById("saveChatName");
+      const cancelChatName = document.getElementById("cancelChatName");
+      const chatNameModalTitle = document.getElementById("chatNameModalTitle");
+      const currentChatName = document.getElementById("currentChatName");
+      const menuToggle = document.getElementById("menuToggle");
+      const sidebar = document.getElementById("sidebar");
+
+      // App State
+      let personas = [];
+      let activePersonaId = null;
+      let editingPersonaId = null;
+      let selectedColor = "#bb86fc";
+      let currentChatId = null;
+      let editingChatId = null;
+      let lastPersonaIds = [];
+      let deletedPersonas = {};
+
+      // Initialize the app
+      // Initialize the app
+      function initializeChats() {
+        let chats = localStorage.getItem("mirrorChats");
+        if (!chats) {
+          const firstChat = {
+            id: "chat_" + Date.now(),
+            name: "Main Chat",
+            createdAt: new Date().toISOString(),
+          };
+          chats = [firstChat];
+          localStorage.setItem("mirrorChats", JSON.stringify(chats));
+          currentChatId = firstChat.id;
+          localStorage.setItem("mirrorChatCurrent", currentChatId);
+        } else {
+          chats = JSON.parse(chats);
+          const savedCurrent = localStorage.getItem("mirrorChatCurrent");
+          currentChatId = savedCurrent || chats[0].id;
         }
 
-        function initializeColorPalette() {
-            colorPalette.addEventListener('click', (e) => {
-                const rect = colorPalette.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                const width = rect.width;
-                const height = rect.height;
-                
-                const hue = (x / width) * 360;
-                let saturation, lightness;
-                if (y < height / 2) {
-                    saturation = (y / (height / 2)) * 100;
-                    lightness = 50 + (50 * (1 - y / (height / 2)));
-                } else {
-                    saturation = 100 - ((y - height / 2) / (height / 2)) * 100;
-                    lightness = 50 - (50 * ((y - height / 2) / (height / 2)));
-                }
-                
-                saturation = Math.max(0, Math.min(100, saturation));
-                lightness = Math.max(0, Math.min(100, lightness));
-                
-                selectedColor = hslToHex(hue, saturation, lightness);
-                updateColorPreview();
-            });
+        // Load deleted personas
+        const savedDeleted = localStorage.getItem("mirrorChatDeletedPersonas");
+        if (savedDeleted) {
+          deletedPersonas = JSON.parse(savedDeleted);
         }
-        
-        function hslToHex(h, s, l) {
-            h /= 360;
-            s /= 100;
-            l /= 100;
-            
-            let r, g, b;
-            
-            if (s === 0) {
-                r = g = b = l;
-            } else {
-                const hue2rgb = (p, q, t) => {
-                    if (t < 0) t += 1;
-                    if (t > 1) t -= 1;
-                    if (t < 1/6) return p + (q - p) * 6 * t;
-                    if (t < 1/2) return q;
-                    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-                    return p;
-                };
-                
-                const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-                const p = 2 * l - q;
-                
-                r = hue2rgb(p, q, h + 1/3);
-                g = hue2rgb(p, q, h);
-                b = hue2rgb(p, q, h - 1/3);
+
+        renderChatsList();
+        loadCurrentChat();
+      }
+
+      // Render the list of chats in the sidebar
+      function renderChatsList() {
+        const chats = JSON.parse(localStorage.getItem("mirrorChats") || "[]");
+        chatsList.innerHTML = "";
+
+        chats.forEach((chat) => {
+          const chatItem = document.createElement("div");
+          chatItem.className = `chat-item ${
+            chat.id === currentChatId ? "active" : ""
+          }`;
+
+          const chatName = document.createElement("span");
+          chatName.textContent = chat.name;
+          chatName.style.flex = "1";
+
+          const actions = document.createElement("div");
+          actions.className = "chat-item-actions";
+
+          const renameBtn = document.createElement("button");
+          renameBtn.className = "chat-action-btn";
+          renameBtn.innerHTML = "✎";
+          renameBtn.title = "Rename";
+          renameBtn.onclick = (e) => {
+            e.stopPropagation();
+            renameChat(chat.id);
+          };
+
+          const deleteBtn = document.createElement("button");
+          deleteBtn.className = "chat-action-btn";
+          deleteBtn.innerHTML = "×";
+          deleteBtn.title = "Delete";
+          deleteBtn.onclick = (e) => {
+            e.stopPropagation();
+            deleteChat(chat.id);
+          };
+
+          actions.appendChild(renameBtn);
+          if (chats.length > 1) {
+            actions.appendChild(deleteBtn);
+          }
+
+          chatItem.appendChild(chatName);
+          chatItem.appendChild(actions);
+
+          chatItem.onclick = () => {
+            switchToChat(chat.id);
+            closeSidebar();
+          };
+
+          chatsList.appendChild(chatItem);
+        });
+      }
+
+      // Switch to a different chat
+      function switchToChat(chatId) {
+        saveCurrentChat();
+        currentChatId = chatId;
+        localStorage.setItem("mirrorChatCurrent", chatId);
+
+        const chats = JSON.parse(localStorage.getItem("mirrorChats") || "[]");
+        const currentChat = chats.find((chat) => chat.id === chatId);
+        if (currentChat) {
+          currentChatName.textContent = currentChat.name;
+        }
+
+        loadCurrentChat();
+        renderChatsList();
+      }
+
+      // Create a new chat
+      function createNewChat() {
+        closeSidebar();
+        const chats = JSON.parse(localStorage.getItem("mirrorChats") || "[]");
+        const newChat = {
+          id: "chat_" + Date.now(),
+          name: `Chat ${chats.length + 1}`,
+          createdAt: new Date().toISOString(),
+        };
+
+        chats.unshift(newChat);
+        localStorage.setItem("mirrorChats", JSON.stringify(chats));
+
+        switchToChat(newChat.id);
+        renameChat(newChat.id);
+      }
+
+      // Rename a chat
+      function renameChat(chatId) {
+        const chats = JSON.parse(localStorage.getItem("mirrorChats") || "[]");
+        const chat = chats.find((c) => c.id === chatId);
+        if (!chat) return;
+
+        editingChatId = chatId;
+        chatNameInput.value = chat.name;
+        chatNameModalTitle.textContent = "Rename Chat";
+        chatNameModal.style.display = "flex";
+        chatNameInput.focus();
+      }
+
+      // Delete a chat
+      function deleteChat(chatId) {
+        const chats = JSON.parse(localStorage.getItem("mirrorChats") || "[]");
+        if (chats.length <= 1) {
+          alert("You must have at least one chat.");
+          return;
+        }
+
+        if (confirm("You can't undone deleting the chat.")) {
+          const filteredChats = chats.filter((chat) => chat.id !== chatId);
+          localStorage.setItem("mirrorChats", JSON.stringify(filteredChats));
+
+          localStorage.removeItem(`mirrorChat_${chatId}`);
+          localStorage.removeItem(`mirrorChatPersonas_${chatId}`);
+
+          if (currentChatId === chatId) {
+            switchToChat(filteredChats[0].id);
+          } else {
+            renderChatsList();
+          }
+        }
+      }
+
+      // Save current chat state
+      function saveCurrentChat() {
+        if (!currentChatId) return;
+
+        localStorage.setItem(
+          `mirrorChatPersonas_${currentChatId}`,
+          JSON.stringify(personas)
+        );
+        localStorage.setItem(
+          `mirrorChatActivePersona_${currentChatId}`,
+          activePersonaId
+        );
+
+        const saved = localStorage.getItem("mirrorChat");
+        if (saved) {
+          localStorage.setItem(`mirrorChat_${currentChatId}`, saved);
+        }
+      }
+
+      // Load current chat
+      function loadCurrentChat() {
+        if (!currentChatId) return;
+
+        const savedPersonas = localStorage.getItem(
+          `mirrorChatPersonas_${currentChatId}`
+        );
+        if (savedPersonas) {
+          personas = JSON.parse(savedPersonas);
+        } else {
+          personas = [
+            { id: "persona1", name: "You", color: "#bb86fc", symbol: "Y" },
+            { id: "persona2", name: "Other", color: "#03DAC6", symbol: "O" },
+          ];
+          savePersonas();
+        }
+
+        const savedActive = localStorage.getItem(
+          `mirrorChatActivePersona_${currentChatId}`
+        );
+        activePersonaId = savedActive || personas[0].id;
+
+        const savedMessages = localStorage.getItem(
+          `mirrorChat_${currentChatId}`
+        );
+        if (savedMessages) {
+          localStorage.setItem("mirrorChat", savedMessages);
+        } else {
+          localStorage.removeItem("mirrorChat");
+        }
+
+        renderPersonas();
+        renderChat();
+      }
+
+      // Save personas to storage
+      function savePersonas() {
+        if (currentChatId) {
+          localStorage.setItem(
+            `mirrorChatPersonas_${currentChatId}`,
+            JSON.stringify(personas)
+          );
+        }
+      }
+
+      // Set active persona (no delay)
+      function setActivePersona(personaId) {
+        activePersonaId = personaId;
+        if (currentChatId) {
+          localStorage.setItem(
+            `mirrorChatActivePersona_${currentChatId}`,
+            personaId
+          );
+        }
+
+        // Update UI
+        document.querySelectorAll(".persona").forEach((el) => {
+          el.classList.remove("active");
+        });
+
+        const activeEl = Array.from(document.querySelectorAll(".persona")).find(
+          (el) => {
+            const persona = personas.find(
+              (p) =>
+                p.symbol === el.textContent && p.color === el.style.background
+            );
+            return persona && persona.id === personaId;
+          }
+        );
+
+        if (activeEl) {
+          activeEl.classList.add("active");
+        }
+
+        // Update lastPersonaIds for switching
+        lastPersonaIds = lastPersonaIds.filter((id) => id !== personaId);
+        lastPersonaIds.push(personaId);
+        if (lastPersonaIds.length > 2) {
+          lastPersonaIds.shift();
+        }
+
+        renderChat();
+        messageInput.focus();
+      }
+
+      // Send a message
+      function sendMessage() {
+        const text = messageInput.value.trim();
+        if (!text) return;
+
+        const messageData = {
+          personaId: activePersonaId,
+          text: text,
+          timestamp: Date.now(),
+        };
+
+        const saved = localStorage.getItem("mirrorChat");
+        const messages = saved ? JSON.parse(saved) : [];
+        messages.push(messageData);
+        localStorage.setItem("mirrorChat", JSON.stringify(messages));
+
+        if (currentChatId) {
+          localStorage.setItem(
+            `mirrorChat_${currentChatId}`,
+            JSON.stringify(messages)
+          );
+        }
+
+        messageInput.value = "";
+        renderChat();
+      }
+
+      // Clear the chat
+      function clearChat() {
+        if (confirm("You can't undone clearing the chat.")) {
+          localStorage.removeItem("mirrorChat");
+          if (currentChatId) {
+            localStorage.removeItem(`mirrorChat_${currentChatId}`);
+          }
+          renderChat();
+        }
+      }
+
+      // Initialize color palette
+      function initializeColorPalette() {
+        colorPalette.addEventListener("click", (e) => {
+          const rect = colorPalette.getBoundingClientRect();
+          const x = e.clientX - rect.left;
+          const y = e.clientY - rect.top;
+          const width = rect.width;
+          const height = rect.height;
+
+          const hue = (x / width) * 360;
+          let saturation, lightness;
+          if (y < height / 2) {
+            saturation = (y / (height / 2)) * 100;
+            lightness = 50 + 50 * (1 - y / (height / 2));
+          } else {
+            saturation = 100 - ((y - height / 2) / (height / 2)) * 100;
+            lightness = 50 - 50 * ((y - height / 2) / (height / 2));
+          }
+
+          saturation = Math.max(0, Math.min(100, saturation));
+          lightness = Math.max(0, Math.min(100, lightness));
+
+          selectedColor = hslToHex(hue, saturation, lightness);
+          updateColorPreview();
+        });
+      }
+
+      // Convert HSL to Hex
+      function hslToHex(h, s, l) {
+        h /= 360;
+        s /= 100;
+        l /= 100;
+
+        let r, g, b;
+
+        if (s === 0) {
+          r = g = b = l;
+        } else {
+          const hue2rgb = (p, q, t) => {
+            if (t < 0) t += 1;
+            if (t > 1) t -= 1;
+            if (t < 1 / 6) return p + (q - p) * 6 * t;
+            if (t < 1 / 2) return q;
+            if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+            return p;
+          };
+
+          const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+          const p = 2 * l - q;
+
+          r = hue2rgb(p, q, h + 1 / 3);
+          g = hue2rgb(p, q, h);
+          b = hue2rgb(p, q, h - 1 / 3);
+        }
+
+        const toHex = (x) => {
+          const hex = Math.round(x * 255).toString(16);
+          return hex.length === 1 ? "0" + hex : hex;
+        };
+
+        return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+      }
+
+      // Update color preview
+      function updateColorPreview() {
+        colorPreview.style.background = selectedColor;
+        colorPreview.style.setProperty("--selected-color", selectedColor);
+      }
+
+      // Render personas (no click delay)
+      function renderPersonas() {
+        personasContainer.innerHTML = "";
+
+        personas.forEach((persona) => {
+          const personaWrapper = document.createElement("div");
+          personaWrapper.className = "persona-wrapper";
+
+          const personaEl = document.createElement("div");
+          personaEl.className = `persona ${
+            persona.id === activePersonaId ? "active" : ""
+          }`;
+          personaEl.style.background = persona.color;
+          personaEl.title = `${persona.name} (${persona.symbol}) - Click to select, double-click to edit`;
+          personaEl.textContent = persona.symbol;
+
+          const nameEl = document.createElement("div");
+          nameEl.className = "persona-name";
+          nameEl.textContent = persona.name;
+          nameEl.title = persona.name;
+
+          // Click to select persona
+          personaEl.addEventListener("click", (e) => {
+            setActivePersona(persona.id);
+          });
+
+          // Right-click to edit persona
+          personaEl.addEventListener("contextmenu", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            editPersona(persona.id);
+          });
+
+          personaWrapper.appendChild(personaEl);
+          personaWrapper.appendChild(nameEl);
+          personasContainer.appendChild(personaWrapper);
+        });
+
+        // Add new persona button
+        const addWrapper = document.createElement("div");
+        addWrapper.className = "persona-wrapper";
+
+        const addPersonaEl = document.createElement("div");
+        addPersonaEl.className = "persona add-persona";
+        addPersonaEl.textContent = "+";
+        addPersonaEl.title = "Add new persona";
+        addPersonaEl.addEventListener("click", createNewPersona);
+
+        const addNameEl = document.createElement("div");
+        addNameEl.className = "persona-name";
+        addNameEl.textContent = "Add";
+        addNameEl.style.color = "#666";
+
+        addWrapper.appendChild(addPersonaEl);
+        addWrapper.appendChild(addNameEl);
+        personasContainer.appendChild(addWrapper);
+      }
+
+      // Render chat messages
+      // Render chat messages
+      function renderChat() {
+        const saved = localStorage.getItem("mirrorChat");
+        chatMessages.innerHTML = "";
+
+        if (saved) {
+          const messages = JSON.parse(saved);
+          let lastPersonaId = null;
+
+          messages.forEach((msgData) => {
+            let persona = personas.find((p) => p.id === msgData.personaId);
+            let isDeleted = false;
+
+            if (!persona) {
+              // Check if this persona was deleted
+              persona = deletedPersonas[msgData.personaId];
+              isDeleted = true;
             }
-            
-            const toHex = (x) => {
-                const hex = Math.round(x * 255).toString(16);
-                return hex.length === 1 ? '0' + hex : hex;
-            };
-            
-            return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-        }
-        
-        function updateColorPreview() {
-            colorPreview.style.background = selectedColor;
-            colorPreview.style.setProperty('--selected-color', selectedColor);
-        }
-        
-        function renderPersonas() {
-            personasContainer.innerHTML = '';
-            
-            personas.forEach(persona => {
-                const personaWrapper = document.createElement('div');
-                personaWrapper.className = 'persona-wrapper';
-                
-                const personaEl = document.createElement('div');
-                personaEl.className = `persona ${persona.id === activePersonaId ? 'active' : ''}`;
-                personaEl.style.background = persona.color;
-                personaEl.title = `${persona.name} (${persona.symbol})`;
-                personaEl.textContent = persona.symbol;
-                
-                const nameEl = document.createElement('div');
-                nameEl.className = 'persona-name';
-                nameEl.textContent = persona.name;
-                nameEl.title = persona.name;
-                
-                personaEl.addEventListener('click', (e) => {
-                    const currentTime = Date.now();
-                    if (currentTime - lastClickTime < 300) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        editPersona(persona.id);
-                    } else {
-                        setActivePersona(persona.id);
-                    }
-                    lastClickTime = currentTime;
-                });
-                
-                personaWrapper.appendChild(personaEl);
-                personaWrapper.appendChild(nameEl);
-                personasContainer.appendChild(personaWrapper);
-            });
-            
-            const addWrapper = document.createElement('div');
-            addWrapper.className = 'persona-wrapper';
-            
-            const addPersonaEl = document.createElement('div');
-            addPersonaEl.className = 'persona add-persona';
-            addPersonaEl.textContent = '+';
-            addPersonaEl.title = 'Add new persona';
-            addPersonaEl.addEventListener('click', createNewPersona);
-            
-            const addNameEl = document.createElement('div');
-            addNameEl.className = 'persona-name';
-            addNameEl.textContent = 'Add';
-            addNameEl.style.color = '#666';
-            
-            addWrapper.appendChild(addPersonaEl);
-            addWrapper.appendChild(addNameEl);
-            personasContainer.appendChild(addWrapper);
-        }
-        
-        function renderChat() {
-            const saved = localStorage.getItem('mirrorChat');
-            chatMessages.innerHTML = '';
-            
-            if (saved) {
-                const messages = JSON.parse(saved);
-                let lastPersonaId = null;
-                
-                messages.forEach(msgData => {
-                    const persona = personas.find(p => p.id === msgData.personaId);
-                    if (!persona) return;
-                    
-                    const isSent = msgData.personaId === activePersonaId;
-                    const showProfile = msgData.personaId !== lastPersonaId;
-                    
-                    if (showProfile) {
-                        const nameEl = document.createElement('div');
-                        nameEl.className = `message-name ${isSent ? 'name-sent' : 'name-received'}`;
-                        nameEl.textContent = persona.name;
-                        nameEl.style.color = persona.color;
-                        chatMessages.appendChild(nameEl);
-                    }
-                    
-                    const messageContainer = document.createElement('div');
-                    messageContainer.className = `message-container ${isSent ? 'sent' : 'received'}`;
-                    
-                    if (showProfile) {
-                        const profilePic = document.createElement('div');
-                        profilePic.className = 'profile-pic';
-                        profilePic.style.background = persona.color;
-                        profilePic.textContent = persona.symbol;
-                        messageContainer.appendChild(profilePic);
-                    } else {
-                        const spacer = document.createElement('div');
-                        spacer.className = 'profile-pic';
-                        spacer.style.visibility = 'hidden';
-                        messageContainer.appendChild(spacer);
-                    }
-                    
-                    const messageBubble = document.createElement('div');
-                    messageBubble.className = 'message-bubble';
-                    messageBubble.innerHTML = msgData.text.replace(/\n/g, '<br>');
-                    messageContainer.appendChild(messageBubble);
-                    
-                    chatMessages.appendChild(messageContainer);
-                    lastPersonaId = msgData.personaId;
-                });
-                
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-            }
-        }
-        
-        function createNewPersona() {
-            editingPersonaId = null;
-            modalTitle.textContent = 'Create Persona';
-            deletePersona.style.display = 'none';
-            personaName.value = '';
-            personaSymbol.value = '';
-            delete personaName.dataset.lastFirstChar;
-            selectedColor = '#bb86fc';
-            updateColorPreview();
-            personaModal.style.display = 'flex';
-            personaName.focus();
-        }
-        
-        function editPersona(personaId) {
-            const persona = personas.find(p => p.id === personaId);
+
             if (!persona) return;
-            
-            editingPersonaId = personaId;
-            modalTitle.textContent = 'Edit Persona';
-            deletePersona.style.display = personas.length > 2 ? 'block' : 'none';
-            personaName.value = persona.name;
-            personaSymbol.value = persona.symbol;
-            selectedColor = persona.color;
-            personaName.dataset.lastFirstChar = persona.name.charAt(0).toUpperCase();
-            updateColorPreview();
-            personaModal.style.display = 'flex';
-            personaName.focus();
-        }
-        
-        function savePersonaHandler() {
-            const name = personaName.value.trim();
-            if (!name) return;
-            
-            let symbol = personaSymbol.value.trim();
-            if (!symbol && name.length > 0) {
-                symbol = name.charAt(0).toUpperCase();
+
+            const isSent = msgData.personaId === activePersonaId;
+            const showProfile = msgData.personaId !== lastPersonaId;
+
+            if (showProfile) {
+              const nameEl = document.createElement("div");
+              nameEl.className = `message-name ${
+                isSent ? "name-sent" : "name-received"
+              }`;
+              nameEl.textContent = isDeleted
+                ? `${persona.name} [deleted]`
+                : persona.name;
+              nameEl.style.color = persona.color;
+              nameEl.style.opacity = isDeleted ? "0.6" : "0.8";
+              chatMessages.appendChild(nameEl);
             }
-            if (!symbol) return;
-            
-            let newPersonaId = editingPersonaId;
-            
-            if (editingPersonaId) {
-                const personaIndex = personas.findIndex(p => p.id === editingPersonaId);
-                if (personaIndex !== -1) {
-                    personas[personaIndex].name = name;
-                    personas[personaIndex].symbol = symbol;
-                    personas[personaIndex].color = selectedColor;
-                }
+
+            const messageContainer = document.createElement("div");
+            messageContainer.className = `message-container ${
+              isSent ? "sent" : "received"
+            }`;
+
+            if (showProfile) {
+              const profilePic = document.createElement("div");
+              profilePic.className = "profile-pic";
+              profilePic.style.background = persona.color;
+              profilePic.textContent = persona.symbol;
+              profilePic.style.opacity = isDeleted ? "0.6" : "1";
+              messageContainer.appendChild(profilePic);
             } else {
-                newPersonaId = 'persona' + Date.now();
-                const newPersona = {
-                    id: newPersonaId,
-                    name: name,
-                    symbol: symbol,
-                    color: selectedColor
-                };
-                personas.push(newPersona);
-                setActivePersona(newPersonaId);
+              const spacer = document.createElement("div");
+              spacer.className = "profile-pic";
+              spacer.style.visibility = "hidden";
+              messageContainer.appendChild(spacer);
             }
-            
-            savePersonas();
-            renderPersonas();
-            renderChat();
-            personaModal.style.display = 'none';
+
+            const messageBubble = document.createElement("div");
+            messageBubble.className = "message-bubble";
+            messageBubble.innerHTML = msgData.text.replace(/\n/g, "<br>");
+            messageBubble.style.opacity = isDeleted ? "0.7" : "1";
+            messageContainer.appendChild(messageBubble);
+
+            chatMessages.appendChild(messageContainer);
+            lastPersonaId = msgData.personaId;
+          });
+
+          chatMessages.scrollTop = chatMessages.scrollHeight;
         }
-        
-        function deletePersonaHandler() {
-            if (personas.length <= 2) return;
-            
-            const personaIndex = personas.findIndex(p => p.id === editingPersonaId);
-            if (personaIndex !== -1) {
-                personas.splice(personaIndex, 1);
-                savePersonas();
-                renderPersonas();
-                
-                if (activePersonaId === editingPersonaId) {
-                    setActivePersona(personas[0].id);
-                }
-            }
-            personaModal.style.display = 'none';
+      }
+
+      // Create new persona
+      function createNewPersona() {
+        editingPersonaId = null;
+        modalTitle.textContent = "Create Persona";
+        deletePersona.style.display = "none";
+        personaName.value = "";
+        personaSymbol.value = "";
+        delete personaName.dataset.lastFirstChar;
+        selectedColor = "#bb86fc";
+        updateColorPreview();
+        personaModal.style.display = "flex";
+        personaName.focus();
+      }
+
+      // Edit persona
+      function editPersona(personaId) {
+        const persona = personas.find((p) => p.id === personaId);
+        if (!persona) return;
+
+        editingPersonaId = personaId;
+        modalTitle.textContent = "Edit Persona";
+        deletePersona.style.display = personas.length > 2 ? "block" : "none";
+        personaName.value = persona.name;
+        personaSymbol.value = persona.symbol;
+        selectedColor = persona.color;
+        personaName.dataset.lastFirstChar = persona.name
+          .charAt(0)
+          .toUpperCase();
+        updateColorPreview();
+        personaModal.style.display = "flex";
+        personaName.focus();
+      }
+
+      // Save persona
+      function savePersonaHandler() {
+        const name = personaName.value.trim();
+        if (!name) return;
+
+        let symbol = personaSymbol.value.trim();
+        if (!symbol && name.length > 0) {
+          symbol = name.charAt(0).toUpperCase();
         }
-        
-        function exportChat() {
-            const saved = localStorage.getItem('mirrorChat');
-            if (!saved) return;
-            
-            const messages = JSON.parse(saved);
-            let exportText = '';
-            
-            messages.forEach(msgData => {
-                const persona = personas.find(p => p.id === msgData.personaId);
-                const name = persona ? persona.name : 'Unknown';
-                const text = msgData.text.replace(/\n/g, '\n');
-                
-                exportText += `${name}:\n${text}\n\n`;
-            });
-            
-            const blob = new Blob([exportText], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'chat_export.txt';
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
+        if (!symbol) return;
+
+        let newPersonaId = editingPersonaId;
+
+        if (editingPersonaId) {
+          const personaIndex = personas.findIndex(
+            (p) => p.id === editingPersonaId
+          );
+          if (personaIndex !== -1) {
+            personas[personaIndex].name = name;
+            personas[personaIndex].symbol = symbol;
+            personas[personaIndex].color = selectedColor;
+          }
+        } else {
+          newPersonaId = "persona" + Date.now();
+          const newPersona = {
+            id: newPersonaId,
+            name: name,
+            symbol: symbol,
+            color: selectedColor,
+          };
+          personas.push(newPersona);
+          setActivePersona(newPersonaId);
         }
 
-        // Event listeners
-        sendButton.addEventListener('click', sendMessage);
-        messageInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-        clearButton.addEventListener('click', clearChat);
-        exportButton.addEventListener('click', exportChat);
-        savePersona.addEventListener('click', savePersonaHandler);
-        cancelPersona.addEventListener('click', () => personaModal.style.display = 'none');
-        deletePersona.addEventListener('click', deletePersonaHandler);
+        savePersonas();
+        renderPersonas();
+        renderChat();
+        personaModal.style.display = "none";
+      }
 
-        personaModal.addEventListener('click', (e) => {
-            if (e.target === personaModal) {
-                personaModal.style.display = 'none';
-            }
-        });
+      // Delete persona
+      function deletePersonaHandler() {
+        if (personas.length <= 2) return;
 
-        personaName.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                savePersonaHandler();
-            }
-        });
+        const personaIndex = personas.findIndex(
+          (p) => p.id === editingPersonaId
+        );
+        if (personaIndex !== -1) {
+          const deletedPersona = personas[personaIndex];
 
-        personaName.addEventListener('input', (e) => {
-            const name = e.target.value;
-            const symbolField = personaSymbol.value.trim();
-            
-            const isEmoji = symbolField.length === 1 && /\p{Emoji}/u.test(symbolField);
-            const isSpecialSymbol = symbolField.length === 1 && /[^a-zA-Z0-9\s]/.test(symbolField);
-            
-            if ((!symbolField || symbolField === personaName.dataset.lastFirstChar) && !isEmoji && !isSpecialSymbol) {
-                if (name.length > 0) {
-                    const newFirstChar = name.charAt(0).toUpperCase();
-                    personaSymbol.value = newFirstChar;
-                    personaName.dataset.lastFirstChar = newFirstChar;
-                } else {
-                    personaSymbol.value = '';
-                    delete personaName.dataset.lastFirstChar;
-                }
-            }
-        });
+          // Store deleted persona info
+          deletedPersonas[editingPersonaId] = {
+            id: deletedPersona.id,
+            name: deletedPersona.name,
+            color: deletedPersona.color,
+            symbol: deletedPersona.symbol,
+          };
 
-        personaSymbol.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                savePersonaHandler();
-            }
-        });
+          // Save deleted personas
+          localStorage.setItem(
+            "mirrorChatDeletedPersonas",
+            JSON.stringify(deletedPersonas)
+          );
 
-        // Chat management event listeners
-        chatsButton.addEventListener('click', () => {
-            chatsDropdown.classList.toggle('show');
-        });
+          // Remove from active personas
+          personas.splice(personaIndex, 1);
+          savePersonas();
+          renderPersonas();
 
-        newChatButton.addEventListener('click', createNewChat);
+          if (activePersonaId === editingPersonaId) {
+            setActivePersona(personas[0].id);
+          }
 
-        saveChatName.addEventListener('click', () => {
-            const newName = chatNameInput.value.trim();
-            if (newName && editingChatId) {
-                const chats = JSON.parse(localStorage.getItem('mirrorChats') || '[]');
-                const chatIndex = chats.findIndex(chat => chat.id === editingChatId);
-                if (chatIndex !== -1) {
-                    chats[chatIndex].name = newName;
-                    localStorage.setItem('mirrorChats', JSON.stringify(chats));
-                    renderChatsMenu();
-                    currentChatName.textContent = newName;
-                }
-            }
-            chatNameModal.style.display = 'none';
+          // Re-render chat to show [deleted] labels
+          renderChat();
+        }
+        personaModal.style.display = "none";
+      }
+
+      // Export chat
+      function exportChat() {
+        const saved = localStorage.getItem("mirrorChat");
+        if (!saved) return;
+
+        const messages = JSON.parse(saved);
+        let exportText = "";
+
+        messages.forEach((msgData) => {
+          const persona = personas.find((p) => p.id === msgData.personaId);
+          const name = persona ? persona.name : "Unknown";
+          const text = msgData.text;
+
+          exportText += `${name}:\n${text}\n\n`;
         });
 
-        cancelChatName.addEventListener('click', () => {
-            chatNameModal.style.display = 'none';
-        });
+        const blob = new Blob([exportText], { type: "text/plain" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "chat_export.txt";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      }
 
-        chatNameModal.addEventListener('click', (e) => {
-            if (e.target === chatNameModal) {
-                chatNameModal.style.display = 'none';
-            }
-        });
+      // Toggle sidebar
+      function toggleSidebar() {
+        sidebar.classList.toggle("open");
+      }
 
-        chatNameInput.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                saveChatName.click();
-            }
-        });
+      // Close sidebar
+      function closeSidebar() {
+        sidebar.classList.remove("open");
+      }
 
-        // Close dropdown when clicking outside
-        document.addEventListener('click', (e) => {
-            if (!chatsButton.contains(e.target) && !chatsDropdown.contains(e.target)) {
-                chatsDropdown.classList.remove('show');
-            }
-        });
+      // Info modal
+      const infoButton = document.getElementById("infoButton");
+      const infoModal = document.getElementById("infoModal");
 
-        // Initialize
-        document.addEventListener('DOMContentLoaded', () => {
-            initializeChats();
-            initializeColorPalette();
-            updateColorPreview();
-        });
+      infoButton.addEventListener("click", () => {
+        infoModal.style.display = "flex";
+      });
+
+      infoModal.addEventListener("click", (e) => {
+        if (e.target === infoModal) {
+          infoModal.style.display = "none";
+        }
+      });
+
+      // Switch between last two personas
+      function switchLastTwoPersonas() {
+        if (lastPersonaIds.length < 2) return;
+
+        // Get the two most recently used personas
+        const [secondLast, last] = lastPersonaIds.slice(-2);
+
+        // If we're currently on the last one, switch to the second last
+        // Otherwise switch to the last one
+        const targetPersonaId = activePersonaId === last ? secondLast : last;
+
+        if (targetPersonaId && targetPersonaId !== activePersonaId) {
+          setActivePersona(targetPersonaId);
+        }
+      }
+
+      // Event Listeners
+      sendButton.addEventListener("click", sendMessage);
+
+      messageInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
+      });
+
+      clearButton.addEventListener("click", clearChat);
+      exportButton.addEventListener("click", exportChat);
+      savePersona.addEventListener("click", savePersonaHandler);
+      cancelPersona.addEventListener(
+        "click",
+        () => (personaModal.style.display = "none")
+      );
+      deletePersona.addEventListener("click", deletePersonaHandler);
+      sidebarNewChat.addEventListener("click", createNewChat);
+      newChatButton.addEventListener("click", createNewChat);
+      menuToggle.addEventListener("click", toggleSidebar);
+
+      personaModal.addEventListener("click", (e) => {
+        if (e.target === personaModal) {
+          personaModal.style.display = "none";
+        }
+      });
+
+      personaName.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          savePersonaHandler();
+        }
+      });
+
+      personaName.addEventListener("input", (e) => {
+        const name = e.target.value;
+        const symbolField = personaSymbol.value.trim();
+
+        const isEmoji = /\p{Emoji}/u.test(symbolField);
+        const isSpecialSymbol = /[^a-zA-Z0-9\s]/.test(symbolField);
+
+        if (
+          (!symbolField || symbolField === personaName.dataset.lastFirstChar) &&
+          !isEmoji &&
+          !isSpecialSymbol
+        ) {
+          if (name.length > 0) {
+            const newFirstChar = name.charAt(0).toUpperCase();
+            personaSymbol.value = newFirstChar;
+            personaName.dataset.lastFirstChar = newFirstChar;
+          } else {
+            personaSymbol.value = "";
+            delete personaName.dataset.lastFirstChar;
+          }
+        }
+      });
+
+      personaSymbol.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          savePersonaHandler();
+        }
+      });
+
+      // Ctrl+` to switch personas
+      document.addEventListener("keydown", (e) => {
+        if (document.activeElement !== messageInput) return;
+
+        if (e.ctrlKey && !e.shiftKey && !e.altKey) {
+          if (e.key === "`") {
+            e.preventDefault();
+            switchLastTwoPersonas();
+          }
+        }
+      });
+
+      saveChatName.addEventListener("click", () => {
+        const newName = chatNameInput.value.trim();
+        if (newName && editingChatId) {
+          const chats = JSON.parse(localStorage.getItem("mirrorChats") || "[]");
+          const chatIndex = chats.findIndex(
+            (chat) => chat.id === editingChatId
+          );
+          if (chatIndex !== -1) {
+            chats[chatIndex].name = newName;
+            localStorage.setItem("mirrorChats", JSON.stringify(chats));
+            renderChatsList();
+            currentChatName.textContent = newName;
+          }
+        }
+        chatNameModal.style.display = "none";
+      });
+
+      cancelChatName.addEventListener("click", () => {
+        chatNameModal.style.display = "none";
+      });
+
+      chatNameModal.addEventListener("click", (e) => {
+        if (e.target === chatNameModal) {
+          chatNameModal.style.display = "none";
+        }
+      });
+
+      chatNameInput.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          saveChatName.click();
+        }
+      });
+
+      document.addEventListener("click", (e) => {
+        if (
+          !sidebar.contains(e.target) &&
+          !menuToggle.contains(e.target) &&
+          window.innerWidth <= 768
+        ) {
+          closeSidebar();
+        }
+      });
+
+      // Initialize the app
+      document.addEventListener("DOMContentLoaded", () => {
+        initializeChats();
+        initializeColorPalette();
+        updateColorPreview();
+      });
     </script>
-</body>
+  </body>
 </html>
